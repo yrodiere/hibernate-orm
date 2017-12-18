@@ -44,7 +44,7 @@ class JpaCdiLifecycleManagementStrategy implements CdiLifecycleManagementStrateg
 
 		T beanInstance = bean.create( creationalContext );
 
-		return new PartiallyManagedBeanImpl<>( beanClass, creationalContext, beanInstance );
+		return new PartiallyManagedBeanImpl<>( beanClass, bean, creationalContext, beanInstance );
 	}
 
 	private static class FullyManagedBeanImpl<T> implements ManagedBean<T> {
@@ -82,13 +82,14 @@ class JpaCdiLifecycleManagementStrategy implements CdiLifecycleManagementStrateg
 
 	private static class PartiallyManagedBeanImpl<T> implements ManagedBean<T> {
 		private final Class<T> beanClass;
+		private final Bean<T> bean;
 		private final CreationalContext<T> creationContext;
 		private final T beanInstance;
 
 		private PartiallyManagedBeanImpl(
-				Class<T> beanClass,
-				CreationalContext<T> creationContext, T beanInstance) {
+				Class<T> beanClass, Bean<T> bean, CreationalContext<T> creationContext, T beanInstance) {
 			this.beanClass = beanClass;
+			this.bean = bean;
 			this.creationContext = creationContext;
 			this.beanInstance = beanInstance;
 		}
@@ -105,7 +106,7 @@ class JpaCdiLifecycleManagementStrategy implements CdiLifecycleManagementStrateg
 
 		@Override
 		public void release() {
-			creationContext.release();
+			bean.destroy( beanInstance, creationContext );
 		}
 	}
 }
