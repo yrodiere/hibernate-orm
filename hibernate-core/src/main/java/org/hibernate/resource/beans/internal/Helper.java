@@ -57,4 +57,13 @@ public class Helper {
 
 		return (Bean<T>) beans.iterator().next();
 	}
+
+	public CdiLifecycleManagementStrategy getLifecycleManagementStrategy(boolean shouldRegistryManageLifecycle) {
+		if ( shouldRegistryManageLifecycle ) {
+			return JpaCdiLifecycleManagementStrategy.INSTANCE;
+		}
+		else {
+			return StandardCdiLifecycleManagementStrategy.INSTANCE;
+		}
+	}
 }
