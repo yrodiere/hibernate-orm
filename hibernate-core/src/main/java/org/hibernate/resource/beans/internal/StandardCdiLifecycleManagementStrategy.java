@@ -29,7 +29,7 @@ class StandardCdiLifecycleManagementStrategy implements CdiLifecycleManagementSt
 
 		T beanInstance = bean.create( creationalContext );
 
-		return new BeanManagerManagedBeanImpl<>( beanClass, creationalContext, beanInstance );
+		return new BeanManagerManagedBeanImpl<>( beanClass, bean, creationalContext, beanInstance );
 	}
 
 	@Override
@@ -41,18 +41,19 @@ class StandardCdiLifecycleManagementStrategy implements CdiLifecycleManagementSt
 
 		T beanInstance = bean.create( creationalContext );
 
-		return new BeanManagerManagedBeanImpl<>( beanClass, creationalContext, beanInstance );
+		return new BeanManagerManagedBeanImpl<>( beanClass, bean, creationalContext, beanInstance );
 	}
 
 	private static class BeanManagerManagedBeanImpl<T> implements ManagedBean<T> {
 		private final Class<T> beanClass;
+		private final Bean<T> bean;
 		private final CreationalContext<T> creationContext;
 		private final T beanInstance;
 
 		private BeanManagerManagedBeanImpl(
-				Class<T> beanClass,
-				CreationalContext<T> creationContext, T beanInstance) {
+				Class<T> beanClass, Bean<T> bean, CreationalContext<T> creationContext, T beanInstance) {
 			this.beanClass = beanClass;
+			this.bean = bean;
 			this.creationContext = creationContext;
 			this.beanInstance = beanInstance;
 		}
@@ -69,7 +70,7 @@ class StandardCdiLifecycleManagementStrategy implements CdiLifecycleManagementSt
 
 		@Override
 		public void release() {
-			creationContext.release();
+			bean.destroy( beanInstance, creationContext );
 		}
 	}
 }
