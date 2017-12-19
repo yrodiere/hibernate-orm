@@ -6,8 +6,7 @@
  */
 package org.hibernate.resource.beans.internal;
 
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.BeanManager;
 
 import org.hibernate.resource.beans.spi.ManagedBean;
@@ -22,39 +21,30 @@ class StandardCdiLifecycleManagementStrategy implements CdiLifecycleManagementSt
 
 	@Override
 	public <T> ManagedBean<T> createBean(BeanManager beanManager, Class<T> beanClass) {
-		Bean<T> bean = Helper.INSTANCE.getBean( beanClass, beanManager );
+		Instance<T> instance = beanManager.createInstance().select( beanClass );
+		T beanInstance = instance.get();
 
-		// Pass the bean to createCreationalContext here so that an existing instance can be returned
-		CreationalContext<T> creationalContext = beanManager.createCreationalContext( bean );
-
-		T beanInstance = bean.create( creationalContext );
-
-		return new BeanManagerManagedBeanImpl<>( beanClass, bean, creationalContext, beanInstance );
+		return new BeanManagerManagedBeanImpl<>( beanClass, instance, beanInstance );
 	}
 
 	@Override
 	public <T> ManagedBean<T> createBean(BeanManager beanManager, String beanName, Class<T> beanClass) {
-		Bean<T> bean = Helper.INSTANCE.getNamedBean( beanName, beanClass, beanManager );
+		Instance<T> instance = beanManager.createInstance().select( beanClass, new NamedBeanQualifier( beanName ) );
+		T beanInstance = instance.get();
 
-		// Pass the bean to createCreationalContext here so that an existing instance can be returned
-		CreationalContext<T> creationalContext = beanManager.createCreationalContext( bean );
-
-		T beanInstance = bean.create( creationalContext );
-
-		return new BeanManagerManagedBeanImpl<>( beanClass, bean, creationalContext, beanInstance );
+		return new BeanManagerManagedBeanImpl<>( beanClass, instance, beanInstance );
 	}
 
 	private static class BeanManagerManagedBeanImpl<T> implements ManagedBean<T> {
 		private final Class<T> beanClass;
-		private final Bean<T> bean;
-		private final CreationalContext<T> creationContext;
+		private final Instance<T> instance;
 		private final T beanInstance;
 
 		private BeanManagerManagedBeanImpl(
-				Class<T> beanClass, Bean<T> bean, CreationalContext<T> creationContext, T beanInstance) {
+				Class<T> beanClass,
+				Instance<T> instance, T beanInstance) {
 			this.beanClass = beanClass;
-			this.bean = bean;
-			this.creationContext = creationContext;
+			this.instance = instance;
 			this.beanInstance = beanInstance;
 		}
 
@@ -70,7 +60,7 @@ class StandardCdiLifecycleManagementStrategy implements CdiLifecycleManagementSt
 
 		@Override
 		public void release() {
-			bean.destroy( beanInstance, creationContext );
+			instance.destroy( beanInstance );
 		}
 	}
 }
