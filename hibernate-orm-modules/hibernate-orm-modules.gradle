@@ -23,6 +23,7 @@ ext {
     // "10" for WildFly 10.x, "11" for 11.x, etc
     wildFlyMajorVersion = wildflyVersion.split( '\\.' )[0]
     wildFlyJPA22PatchVersion = '1.0.0.Beta1'
+    wildFlyCDI20PatchVersion = '3.0.2.Final'
 
     artifactClassifier = "wildfly-${wildFlyMajorVersion}-dist"
 
@@ -54,7 +55,18 @@ configurations {
 
     wildflyDist
     wildflyJPA22Patch
+    wildflyCDI20Patch
     byteBuddy
+}
+
+repositories {
+    ivy {
+        name 'jboss-downloads-weld'
+        url 'http://download.jboss.org/weld/'
+        layout 'pattern', {
+            artifact '/[revision]/[artifact]-[revision](-[classifier]).[ext]'
+        }
+    }
 }
 
 dependencies {
@@ -62,6 +74,8 @@ dependencies {
     wildflyDist "org.wildfly:wildfly-dist:${wildflyVersion}@zip"
     byteBuddy libraries.byteBuddy
     wildflyJPA22Patch "org.hibernate.javax.persistence:hibernate-jpa-api-2.2-wildflymodules:${wildFlyJPA22PatchVersion}:wildfly-${wildflyVersion}-patch@zip"
+    // The following uses a custom Ivy repository, hence the weird coordinates
+    wildflyCDI20Patch "IGNORED:wildfly-${wildflyVersion}-weld:${wildFlyCDI20PatchVersion}:patch@zip"
 
     testCompile project( ":hibernate-core" )
     testCompile project( ":hibernate-envers" )
@@ -179,8 +193,11 @@ task installWildFly(type: Copy, dependsOn: createModulesZip) {
     from configurations.wildflyDist.collect { zipTree(it) }
     into wildFlyInstallDirBase
 
-    final File patchFile = configurations.wildflyJPA22Patch.resolvedConfiguration.resolvedArtifacts[0].file
-    inputs.file( patchFile )
+    final File jpa22PatchFile = configurations.wildflyJPA22Patch.resolvedConfiguration.resolvedArtifacts[0].file
+    inputs.file( jpa22PatchFile )
+
+    final File cdi20PatchFile = configurations.wildflyCDI20Patch.resolvedConfiguration.resolvedArtifacts[0].file
+    inputs.file( cdi20PatchFile )
 
     doFirst {
         cleanInstallWildFly
@@ -188,8 +205,8 @@ task installWildFly(type: Copy, dependsOn: createModulesZip) {
 
     doLast {
 
-        // until we have a version of WF supporting EE 8 (JPA 2.2),  we need to patch
-        // the install to support JPA 2.2
+        // until we have a version of WF supporting EE 8 (JPA 2.2 / CDI 2.0),
+        // we need to patch the install to support JPA 2.2 and CDI 2.0
 
         def executableExtension = (System.properties['os.name'].toLowerCase().contains('windows')) ? 'bat' : 'sh'
 
@@ -197,7 +214,13 @@ task installWildFly(type: Copy, dependsOn: createModulesZip) {
             ignoreExitValue = true
 
             executable "$wildFlyInstallDir/bin/jboss-cli." + executableExtension
-            args "patch apply $patchFile.absolutePath"
+            args "patch apply $jpa22PatchFile.absolutePath"
+        }
+        exec {
+            ignoreExitValue = true
+
+            executable "$wildFlyInstallDir/bin/jboss-cli." + executableExtension
+            args "patch apply $cdi20PatchFile.absolutePath"
         }
 
         // and then install the Hibernate
