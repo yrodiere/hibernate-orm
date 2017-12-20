@@ -21,6 +21,13 @@ buildscript {
 			name "jboss-snapshots"
 			url "http://snapshots.jboss.org/maven2/"
 		}
+		ivy {
+			name 'jboss-downloads'
+			url 'http://download.jboss.org/weld/'
+			layout 'pattern', {
+				artifact '/[organisation]/[revision]/[module]-[revision][classifier].[ext]'
+			}
+		}
 	}
 	dependencies {
 		classpath 'org.hibernate.build.gradle:gradle-maven-publish-auth:2.0.1'

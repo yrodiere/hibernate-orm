@@ -25,6 +25,7 @@ ext {
     // e.g. "10" for WildFly 10.x
     wildFlyMajorVersion = wildFlyVersionComponents[0];
     wildFlyJPA22PatchVersion = '1.0.0.Beta1'
+    wildFlyCDI20PatchVersion = '3.0.2.Final'
 
     artifactClassifier = "wildfly-${wildFlyMajorVersion}-dist"
 
@@ -54,6 +55,7 @@ configurations {
 
     wildflyDist
     wildflyJPA22Patch
+    wildflyCDI20Patch
     byteBuddy
 }
 
@@ -62,6 +64,8 @@ dependencies {
     wildflyDist "org.wildfly:wildfly-dist:${wildflyVersion}@zip"
     byteBuddy libraries.byteBuddy
     wildflyJPA22Patch "org.hibernate.javax.persistence:hibernate-jpa-api-2.2-wildflymodules:${wildFlyJPA22PatchVersion}:wildfly-${wildflyVersion}-patch@zip"
+    // The following uses a custom Ivy repository, hence the weird coordinates
+    wildflyCDI20Patch "weld:wildfly-${wildflyVersion}-weld:${wildFlyCDI20PatchVersion}:-patch@zip"
 
     testCompile project( ":hibernate-core" )
     testCompile project( ":hibernate-envers" )
@@ -193,8 +197,23 @@ task patchWildFlytoJPA22(type: Copy, dependsOn: [installWildFly]) {
             //the current solution is close by making this task a 'Copy' rather than Exec,
             //using the 'into' section as a marker for this being already done,
             //but it's not very reliable so we need to enable 'ignoreExitValue'.
+            // see also patchWildFlytoCDI20 below (same problem)
             ignoreExitValue = true
             args "patch apply $buildDir/jpa22-wildfly-patch/hibernate-jpa-api-2.2-wildflymodules-${wildFlyJPA22PatchVersion}-wildfly-$wildflyVersion-patch.zip"
+        }
+    }
+}
+
+task patchWildFlytoCDI20(type: Copy, dependsOn: [installWildFly]) {
+    description = 'Patch the WildFly server to provide a CDI 2,0 runtime (instead of CDI 1.1)'
+    from configurations.wildflyCDI20Patch
+    into "$buildDir/cdi20-wildfly-patch"
+    doLast {
+        exec {
+            executable "$wildFlyInstallDirBase/wildfly-$wildflyVersion/bin/jboss-cli.sh"
+            //TODO find out how to reliably skip applying this patch when already applied? see patchWildFlytoJPA22 above
+            ignoreExitValue = true
+            args "patch apply $buildDir/cdi20-wildfly-patch/wildfly-$wildflyVersion-weld-${wildFlyCDI20PatchVersion}-patch.zip"
         }
     }
 }
@@ -205,7 +224,7 @@ task installHibernateModule( type:Copy, dependsOn: [createModulesZip, installWil
     into "${wildFlyInstallDir}/modules"
 }
 
-task prepareWildFlyForTests( dependsOn: [installWildFly, installHibernateModule, patchWildFlytoJPA22] )
+task prepareWildFlyForTests( dependsOn: [installWildFly, installHibernateModule, patchWildFlytoJPA22, patchWildFlytoCDI20] )
 
 test.dependsOn prepareWildFlyForTests
 
