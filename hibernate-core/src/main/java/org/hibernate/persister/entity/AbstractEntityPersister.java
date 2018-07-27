@@ -4691,9 +4691,13 @@ public abstract class AbstractEntityPersister
 		return entityMetamodel.hasSubclasses();
 	}
 
+	@Override
+	public boolean hasPartialLoading() {
+		return getEntityTuplizer().hasPartialLoading();
+	}
+
 	public boolean hasProxy() {
-		// skip proxy instantiation if entity is bytecode enhanced
-		return entityMetamodel.isLazy() && !entityMetamodel.getBytecodeEnhancementMetadata().isEnhancedForLazyLoading();
+		return getEntityTuplizer().hasProxy();
 	}
 
 	public IdentifierGenerator getIdentifierGenerator() throws HibernateException {

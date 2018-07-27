@@ -194,6 +194,19 @@ public interface EntityTuplizer extends Tuplizer {
 	void afterInitialize(Object entity, SharedSessionContractImplementor session);
 
 	/**
+	 * Does this entity, for this mode, support partial loading,
+	 * i.e. loading only some of the properties, lazily initializing the other properties
+	 * when they are first accessed.
+	 *
+	 * This requires bytecode enhancement.
+	 *
+	 * @return True if this tuplizer has partial loading support; false otherwise.
+	 */
+	default boolean hasPartialLoading() {
+		return false;
+	}
+
+	/**
 	 * Does this entity, for this mode, present a possibility for proxying?
 	 *
 	 * @return True if this tuplizer can generate proxies for this entity.

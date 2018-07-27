@@ -28,42 +28,49 @@ public interface LoadEventListener extends Serializable {
 
 	public static final LoadType RELOAD = new LoadType( "RELOAD" )
 			.setAllowNulls( false )
+			.setAllowPartialLoading( true )
 			.setAllowProxyCreation( false )
 			.setCheckDeleted( true )
 			.setNakedEntityReturned( false );
 
 	public static final LoadType GET = new LoadType( "GET" )
 			.setAllowNulls( true )
+			.setAllowPartialLoading( true )
 			.setAllowProxyCreation( false )
 			.setCheckDeleted( true )
 			.setNakedEntityReturned( false );
 
 	public static final LoadType LOAD = new LoadType( "LOAD" )
 			.setAllowNulls( false )
+			.setAllowPartialLoading( true )
 			.setAllowProxyCreation( true )
 			.setCheckDeleted( true )
 			.setNakedEntityReturned( false );
 
 	public static final LoadType IMMEDIATE_LOAD = new LoadType( "IMMEDIATE_LOAD" )
 			.setAllowNulls( true )
+			.setAllowPartialLoading( false )
 			.setAllowProxyCreation( false )
 			.setCheckDeleted( false )
 			.setNakedEntityReturned( true );
 
 	public static final LoadType INTERNAL_LOAD_EAGER = new LoadType( "INTERNAL_LOAD_EAGER" )
 			.setAllowNulls( false )
+			.setAllowPartialLoading( false )
 			.setAllowProxyCreation( false )
 			.setCheckDeleted( false )
 			.setNakedEntityReturned( false );
 
 	public static final LoadType INTERNAL_LOAD_LAZY = new LoadType( "INTERNAL_LOAD_LAZY" )
 			.setAllowNulls( false )
+			.setAllowPartialLoading( false )
 			.setAllowProxyCreation( true )
 			.setCheckDeleted( false )
 			.setNakedEntityReturned( false );
 
 	public static final LoadType INTERNAL_LOAD_NULLABLE = new LoadType( "INTERNAL_LOAD_NULLABLE" )
 			.setAllowNulls( true )
+			.setAllowPartialLoading( false )
 			.setAllowProxyCreation( false )
 			.setCheckDeleted( false )
 			.setNakedEntityReturned( false );
@@ -74,6 +81,7 @@ public interface LoadEventListener extends Serializable {
 		private boolean nakedEntityReturned;
 		private boolean allowNulls;
 		private boolean checkDeleted;
+		private boolean allowPartialLoading;
 		private boolean allowProxyCreation;
 
 		private LoadType(String name) {
@@ -104,6 +112,15 @@ public interface LoadEventListener extends Serializable {
 
 		private LoadType setCheckDeleted(boolean checkDeleted) {
 			this.checkDeleted = checkDeleted;
+			return this;
+		}
+
+		public boolean isAllowPartialLoading() {
+			return allowPartialLoading;
+		}
+
+		private LoadType setAllowPartialLoading(boolean allowPartialLoading) {
+			this.allowPartialLoading = allowPartialLoading;
 			return this;
 		}
 

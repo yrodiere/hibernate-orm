@@ -167,6 +167,19 @@ public interface EntityPersister extends EntityDefinition {
 	Serializable[] getQuerySpaces();
 
 	/**
+	 * Determine whether this entity supports partial loading,
+	 * i.e. loading only some of the properties, lazily initializing the other properties
+	 * when they are first accessed.
+	 *
+	 * This requires bytecode enhancement.
+	 *
+	 * @return True if the entity has partial loading support; false otherwise.
+	 */
+	default boolean hasPartialLoading() {
+		return false;
+	}
+
+	/**
 	 * Determine whether this entity supports dynamic proxies.
 	 *
 	 * @return True if the entity has dynamic proxy support; false otherwise.

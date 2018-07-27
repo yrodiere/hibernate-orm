@@ -260,6 +260,11 @@ public class DefaultLoadEventListener extends AbstractLockUpgradeEventListener i
 			);
 		}
 
+		// this class will be loaded only partially and we are allowed to do so
+		if ( options.isAllowPartialLoading() && persister.hasPartialLoading() ) {
+			return load( event, persister, keyToLoad, options );
+		}
+
 		// this class has no proxies (so do a shortcut)
 		if ( !persister.hasProxy() ) {
 			return load( event, persister, keyToLoad, options );
