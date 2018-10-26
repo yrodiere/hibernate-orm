@@ -761,6 +761,11 @@ public class MetamodelImpl implements MetamodelImplementor, Serializable {
 	}
 
 	@Override
+	public <T> void addNamedEntityGraph(String graphName, EntityGraph<T> entityGraph) {
+		addNamedEntityGraph( graphName, (RootGraphImplementor<T>) entityGraph );
+	}
+
+	@Override
 	@SuppressWarnings("unchecked")
 	public <T> RootGraphImplementor<T> findEntityGraphByName(String name) {
 		return entityGraphMap.get( name );

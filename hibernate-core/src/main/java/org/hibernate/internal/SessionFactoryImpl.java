@@ -590,7 +590,7 @@ public final class SessionFactoryImpl implements SessionFactoryImplementor {
 
 	@Override
 	public <T> List<RootGraphImplementor<? super T>> findEntityGraphsByJavaType(Class<T> entityClass) {
-		return getMetamodel().findEntityGraphsByType( entityClass );
+		return getMetamodel().findEntityGraphsByJavaType( entityClass );
 	}
 
 
