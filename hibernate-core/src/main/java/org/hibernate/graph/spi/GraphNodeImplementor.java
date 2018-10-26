@@ -6,6 +6,9 @@
  */
 package org.hibernate.graph.spi;
 
+import java.util.List;
+import javax.persistence.AttributeNode;
+
 import org.hibernate.graph.GraphNode;
 
 /**
@@ -15,6 +18,28 @@ import org.hibernate.graph.GraphNode;
  * @author Strong Liu <stliu@hibernate.org>
  */
 public interface GraphNodeImplementor<J> extends GraphNode<J> {
+
 	@Override
 	GraphNodeImplementor<J> makeCopy(boolean mutable);
+
+	/**
+	 * @deprecated This only makes sense on graphs or subgraphs; other nodes (attribute nodes) will return an empty list.
+	 * Use org.hibernate.graph.spi.{@link GraphImplementor#getAttributeNodeImplementors()} instead.
+	 */
+	@Deprecated
+	List<AttributeNodeImplementor<?>> attributeImplementorNodes();
+
+	/**
+	 * @deprecated This only makes sense on graphs or subgraphs; other nodes (attribute nodes) will return an empty list.
+	 * Use {@link GraphImplementor#getGraphAttributeNodes()} instead.
+	 */
+	@Deprecated
+	List<AttributeNode<?>> attributeNodes();
+
+	/**
+	 * @deprecated This only makes sense on graphs or subgraphs; other nodes (attribute nodes) will return false.
+	 * Use {@link GraphImplementor#findAttributeNode(String)} instead.
+	 */
+	@Deprecated
+	boolean containsAttribute(String name);
 }

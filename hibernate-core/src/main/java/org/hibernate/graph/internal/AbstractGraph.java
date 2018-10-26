@@ -152,9 +152,19 @@ public abstract class AbstractGraph<J> extends AbstractGraphNode<J> implements G
 	}
 
 	@Override
+	public boolean containsAttribute(String name) {
+		return findAttributeNode( name ) != null;
+	}
+
+	@Override
 	@SuppressWarnings("unchecked")
 	public List<AttributeNode<?>> getGraphAttributeNodes() {
 		return (List) getAttributeNodeImplementors();
+	}
+
+	@Override
+	public List<javax.persistence.AttributeNode<?>> attributeNodes() {
+		return (List) getGraphAttributeNodes();
 	}
 
 	@Override
@@ -162,6 +172,11 @@ public abstract class AbstractGraph<J> extends AbstractGraphNode<J> implements G
 		return attrNodeMap == null
 				? Collections.emptyList()
 				: new ArrayList<>( attrNodeMap.values() );
+	}
+
+	@Override
+	public List<AttributeNodeImplementor<?>> attributeImplementorNodes() {
+		return getAttributeNodeImplementors();
 	}
 
 	@Override

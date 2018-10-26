@@ -8,8 +8,11 @@ package org.hibernate.graph.internal;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import javax.persistence.AttributeNode;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.graph.CannotContainSubGraphException;
@@ -57,6 +60,21 @@ public class AttributeNodeImpl<J>
 		this.attribute = attribute;
 		this.subGraphMap = subGraphMap;
 		this.keySubGraphMap = keySubGraphMap;
+	}
+
+	@Override
+	public List<AttributeNodeImplementor<?>> attributeImplementorNodes() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<AttributeNode<?>> attributeNodes() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public boolean containsAttribute(String name) {
+		return false;
 	}
 
 	@Override
