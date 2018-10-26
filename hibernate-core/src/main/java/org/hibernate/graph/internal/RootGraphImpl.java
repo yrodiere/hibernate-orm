@@ -7,15 +7,20 @@
 package org.hibernate.graph.internal;
 
 import javax.persistence.EntityGraph;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.IdentifiableType;
+import javax.persistence.metamodel.ManagedType;
 
 import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.graph.SubGraph;
+import org.hibernate.graph.spi.EntityGraphImplementor;
 import org.hibernate.graph.spi.GraphImplementor;
 import org.hibernate.graph.spi.RootGraphImplementor;
 import org.hibernate.graph.spi.SubGraphImplementor;
 import org.hibernate.metamodel.model.domain.spi.EntityTypeDescriptor;
 import org.hibernate.metamodel.model.domain.spi.IdentifiableTypeDescriptor;
+import org.hibernate.metamodel.model.domain.spi.ManagedTypeDescriptor;
 
 /**
  * The Hibernate implementation of the JPA EntityGraph contract.
@@ -59,6 +64,11 @@ public class RootGraphImpl<J> extends AbstractGraph<J> implements EntityGraph<J>
 	}
 
 	@Override
+	public EntityGraphImplementor<J> makeMutableCopy() {
+		return makeCopy( true );
+	}
+
+	@Override
 	public SubGraphImplementor<J> makeSubGraph(boolean mutable) {
 		return new SubGraphImpl<>( mutable, this );
 	}
@@ -79,19 +89,7 @@ public class RootGraphImpl<J> extends AbstractGraph<J> implements EntityGraph<J>
 
 	@Override
 	public boolean appliesTo(EntityTypeDescriptor<? super J> entityType) {
-		if ( this.getGraphedType().equals( entityType ) ) {
-			return true;
-		}
-
-		IdentifiableTypeDescriptor superType = entityType.getSupertype();
-		while ( superType != null ) {
-			if ( superType.equals( entityType ) ) {
-				return true;
-			}
-			superType = superType.getSupertype();
-		}
-
-		return false;
+		return appliesTo( (EntityType<? super J>) entityType );
 	}
 
 	@Override
@@ -102,5 +100,22 @@ public class RootGraphImpl<J> extends AbstractGraph<J> implements EntityGraph<J>
 	@Override
 	public boolean appliesTo(Class entityType) {
 		return appliesTo( sessionFactory().getMetamodel().entity( entityType ) );
+	}
+
+	@Override
+	public boolean appliesTo(EntityType<? super J> entityType) {
+		if ( this.getGraphedType().equals( entityType ) ) {
+			return true;
+		}
+
+		IdentifiableType superType = entityType.getSupertype();
+		while ( superType != null ) {
+			if ( superType.equals( entityType ) ) {
+				return true;
+			}
+			superType = superType.getSupertype();
+		}
+
+		return false;
 	}
 }

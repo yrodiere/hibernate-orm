@@ -6,6 +6,8 @@
  */
 package org.hibernate.graph.spi;
 
+import javax.persistence.metamodel.EntityType;
+
 import org.hibernate.graph.RootGraph;
 import org.hibernate.metamodel.model.domain.spi.EntityTypeDescriptor;
 import org.hibernate.metamodel.model.domain.spi.ManagedTypeDescriptor;
@@ -15,8 +17,15 @@ import org.hibernate.metamodel.model.domain.spi.ManagedTypeDescriptor;
  *
  * @author Steve Ebersole
  */
-public interface RootGraphImplementor<J> extends RootGraph<J>, GraphImplementor<J> {
+public interface RootGraphImplementor<J> extends RootGraph<J>, GraphImplementor<J>, EntityGraphImplementor<J> {
 	boolean appliesTo(EntityTypeDescriptor<? super J> entityType);
+
+	/**
+	 * @deprecated Use {@link #appliesTo(EntityTypeDescriptor)} instead.
+	 */
+	@Deprecated
+	@Override
+	boolean appliesTo(EntityType<? super J> entityType);
 
 	@Override
 	@SuppressWarnings("unchecked")
@@ -32,12 +41,20 @@ public interface RootGraphImplementor<J> extends RootGraph<J>, GraphImplementor<
 	SubGraphImplementor<J> makeSubGraph(boolean mutable);
 
 	/**
+	 * @deprecated Use {@link #makeCopy(boolean)} instead.
+	 */
+	@Override
+	@Deprecated
+	EntityGraphImplementor<J> makeMutableCopy();
+
+	/**
 	 * Make an immutable copy of this entity graph, using the given name.
 	 *
 	 * @param name The name to apply to the immutable copy
 	 *
 	 * @return The immutable copy
 	 */
+	@Override
 	default RootGraphImplementor<J> makeImmutableCopy(String name) {
 		return makeRootGraph( name, false );
 	}
