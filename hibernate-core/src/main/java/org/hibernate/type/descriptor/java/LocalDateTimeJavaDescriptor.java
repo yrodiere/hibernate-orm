@@ -6,10 +6,13 @@
  */
 package org.hibernate.type.descriptor.java;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -60,27 +63,30 @@ public class LocalDateTimeJavaDescriptor extends AbstractTypeDescriptor<LocalDat
 		}
 
 		if ( java.sql.Date.class.isAssignableFrom( type ) ) {
-			Instant instant = value.atZone( ZoneId.systemDefault() ).toInstant();
-			return (X) java.sql.Date.from( instant );
+			return (X) java.sql.Date.valueOf( value.toLocalDate() );
 		}
 
 		if ( java.sql.Time.class.isAssignableFrom( type ) ) {
-			Instant instant = value.atZone( ZoneId.systemDefault() ).toInstant();
-			return (X) java.sql.Time.from( instant );
-		}
-
-		if ( java.util.Date.class.isAssignableFrom( type ) ) {
-			Instant instant = value.atZone( ZoneId.systemDefault() ).toInstant();
-			return (X) java.util.Date.from( instant );
-		}
-
-		if ( Calendar.class.isAssignableFrom( type ) ) {
-			return (X) GregorianCalendar.from( value.atZone( ZoneId.systemDefault() ) );
+			return (X) Time.valueOf( value.toLocalTime() );
 		}
 
 		if ( Long.class.isAssignableFrom( type ) ) {
 			Instant instant = value.atZone( ZoneId.systemDefault() ).toInstant();
 			return (X) Long.valueOf( instant.toEpochMilli() );
+		}
+
+		GregorianCalendar calendar = new GregorianCalendar(
+				value.getYear() - 1900, value.getMonthValue() - 1, value.getDayOfMonth(),
+				value.getHour(), value.getMinute(), value.getSecond()
+		);
+		calendar.set( Calendar.MILLISECOND, value.getNano() / 1_000_000 );
+
+		if ( java.util.Date.class.isAssignableFrom( type ) ) {
+			return (X) calendar.getTime();
+		}
+
+		if ( Calendar.class.isAssignableFrom( type ) ) {
+			return (X) calendar;
 		}
 
 		throw unknownUnwrap( type );
@@ -112,7 +118,7 @@ public class LocalDateTimeJavaDescriptor extends AbstractTypeDescriptor<LocalDat
 		}
 
 		if ( Date.class.isInstance( value ) ) {
-			final Timestamp ts = (Timestamp) value;
+			final Date ts = (Date) value;
 			final Instant instant = Instant.ofEpochMilli( ts.getTime() );
 			return LocalDateTime.ofInstant( instant, ZoneId.systemDefault() );
 		}

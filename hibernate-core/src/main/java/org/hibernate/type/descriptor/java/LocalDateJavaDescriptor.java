@@ -66,20 +66,21 @@ public class LocalDateJavaDescriptor extends AbstractTypeDescriptor<LocalDate> {
 			return (X) Timestamp.valueOf( localDateTime );
 		}
 
-		final ZonedDateTime zonedDateTime = localDateTime.atZone( ZoneId.systemDefault() );
+		if ( Long.class.isAssignableFrom( type ) ) {
+			Instant instant = value.atStartOfDay( ZoneId.systemDefault() ).toInstant();
+			return (X) Long.valueOf( instant.toEpochMilli() );
+		}
+
+		GregorianCalendar calendar = new GregorianCalendar(
+				value.getYear(), value.getMonthValue() - 1, value.getDayOfMonth()
+		);
+
+		if ( java.util.Date.class.isAssignableFrom( type ) ) {
+			return (X) calendar.getTime();
+		}
 
 		if ( Calendar.class.isAssignableFrom( type ) ) {
-			return (X) GregorianCalendar.from( zonedDateTime );
-		}
-
-		final Instant instant = zonedDateTime.toInstant();
-
-		if ( Date.class.equals( type ) ) {
-			return (X) Date.from( instant );
-		}
-
-		if ( Long.class.isAssignableFrom( type ) ) {
-			return (X) Long.valueOf( instant.toEpochMilli() );
+			return (X) calendar;
 		}
 
 		throw unknownUnwrap( type );

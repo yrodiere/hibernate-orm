@@ -96,6 +96,11 @@ public class OffsetDateTimeJavaDescriptor extends AbstractTypeDescriptor<OffsetD
 			return OffsetDateTime.ofInstant( ts.toInstant(), ZoneId.systemDefault() );
 		}
 
+		if ( java.sql.Date.class.isInstance( value ) ) {
+			final java.sql.Date date = (java.sql.Date) value;
+			return date.toLocalDate().atStartOfDay( ZoneId.systemDefault() ).toOffsetDateTime();
+		}
+
 		if ( Date.class.isInstance( value ) ) {
 			final Date date = (Date) value;
 			return OffsetDateTime.ofInstant( date.toInstant(), ZoneId.systemDefault() );
