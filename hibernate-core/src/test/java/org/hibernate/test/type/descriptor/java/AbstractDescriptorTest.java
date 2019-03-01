@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
  * @author Steve Ebersole
  */
 public abstract class AbstractDescriptorTest<T> extends BaseUnitTestCase {
-	protected class Data<T> {
+	protected static class Data<T> {
 		private final T originalValue;
 		private final T copyOfOriginalValue;
 		private final T differentValue;
@@ -46,6 +46,10 @@ public abstract class AbstractDescriptorTest<T> extends BaseUnitTestCase {
 	@Before
 	public void setUp() throws Exception {
 		testData = getTestData();
+	}
+
+	public JavaTypeDescriptor<T> getTypeDescriptor() {
+		return typeDescriptor;
 	}
 
 	protected abstract Data<T> getTestData();

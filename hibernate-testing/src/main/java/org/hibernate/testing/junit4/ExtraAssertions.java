@@ -9,11 +9,13 @@ package org.hibernate.testing.junit4;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.sql.Types;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Assert;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.fail;
 
 /**
@@ -84,5 +86,18 @@ public final class ExtraAssertions {
 			}
 		}
 		return cache;
+	}
+
+	public static void assertCalendarApproximatelyEquals(Calendar expected, Calendar actual) {
+		assertArrayEquals( calendarToObjectArray( expected ), calendarToObjectArray( actual ) );
+	}
+
+	private static Object[] calendarToObjectArray(Calendar calendar) {
+		return calendar == null ? null : new Object[] {
+				calendar.get( Calendar.YEAR ), calendar.get( Calendar.MONTH ), calendar.get( Calendar.DATE ),
+				calendar.get( Calendar.HOUR_OF_DAY ), calendar.get( Calendar.MINUTE ), calendar.get( Calendar.SECOND ),
+				calendar.get( Calendar.MILLISECOND ),
+				calendar.getTimeZone()
+		};
 	}
 }
