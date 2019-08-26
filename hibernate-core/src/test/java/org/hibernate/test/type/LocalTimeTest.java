@@ -34,6 +34,22 @@ import org.junit.runners.Parameterized;
 /**
  * Tests for storage of LocalTime properties.
  */
+/*
+ * MySQL ConnectorJ 5.x is very, very buggy when it comes to converting times between timezones,
+ * regardless of how you configure it (useLegacyDateTimeCode, useTimezone, useJDBCCompliantTimezoneShift, ...).
+ * The main problem is that timezone conversion is generally not applied the same way when reading and writing,
+ * leading to reads returning a different value than the one we wrote.
+ * ConnectorJ 8.x looks better, but is still buggy in some way that affect other tests.
+ * In particular when storing a java.sqlTime whose timestamp is not some time in January 1, 1970,"
+ * but another day (e.g. new Time(new Date().getTime())), "
+ * it won't correctly handle DST: it will apply the offset when storing,"
+ * but not when retrieving the time (which is normal since the date is lost)."
+ * ConnectorJ 8.x also seems to be a major rewrite,
+ * so we'd have to decide whether an upgrade is something we can consider.
+ */
+@SkipForDialect(value = MySQL5Dialect.class,
+		comment = "MySQL ConnectorJ 5.x is very, very buggy when it comes to converting times between timezones (see comment)."
+)
 public class LocalTimeTest extends AbstractJavaTimeTypeTest<LocalTime, LocalTimeTest.EntityWithLocalTime> {
 
 	private static class ParametersBuilder extends AbstractParametersBuilder<ParametersBuilder> {

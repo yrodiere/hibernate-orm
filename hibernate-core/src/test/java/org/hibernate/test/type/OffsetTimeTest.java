@@ -37,6 +37,9 @@ import org.junit.runners.Parameterized;
 /**
  * Tests for storage of OffsetTime properties.
  */
+@SkipForDialect(value = MySQL5Dialect.class,
+		comment = "MySQL ConnectorJ 5.x is very, very buggy when it comes to converting times between timezones (see comment in LocalTimeTest)."
+)
 public class OffsetTimeTest extends AbstractJavaTimeTypeTest<OffsetTime, OffsetTimeTest.EntityWithOffsetTime> {
 
 	private static class ParametersBuilder extends AbstractParametersBuilder<ParametersBuilder> {
