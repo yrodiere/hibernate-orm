@@ -111,7 +111,7 @@ ext {
             postgresql:      'org.postgresql:postgresql:42.2.2',
             //Upgrade MySQL Driver only when this issue gets fixed: https://bugs.mysql.com/bug.php?id=85941
             mysql:           'mysql:mysql-connector-java:5.1.46',
-            mariadb:         'org.mariadb.jdbc:mariadb-java-client:2.2.3',
+            mariadb:         'org.mariadb.jdbc:mariadb-java-client:2.4.3',
 
             oracle:          'com.oracle.jdbc:ojdbc8:12.2.0.1',
             mssql:           'com.microsoft.sqlserver:mssql-jdbc:7.2.1.jre8',
