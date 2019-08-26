@@ -47,7 +47,7 @@ public class LocalDateCustomSessionLevelTimeZoneTest
 				url += "&";
 			}
 
-			url += "useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Europe/Berlin";
+			url += "useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Europe/Berlin&cacheDefaultTimezone=false";
 
 			configurationValues.put( AvailableSettings.URL, url);
 			super.configure( configurationValues );

@@ -32,7 +32,7 @@
 	            <config-property>
 	              <config-property-name>ConnectionURL</config-property-name>
 	              <config-property-type>java.lang.String</config-property-type>
-	              <config-property-value>jdbc:mysql:///test</config-property-value>
+	              <config-property-value>jdbc:mysql:///test?cacheDefaultTimezone=false</config-property-value>
 	            </config-property>
 	            <config-property>
 	              <config-property-name>DriverClass</config-property-name>

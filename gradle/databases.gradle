@@ -49,14 +49,14 @@ ext {
                         'jdbc.driver': 'com.mysql.jdbc.Driver',
                         'jdbc.user'  : 'hibernateormtest',
                         'jdbc.pass'  : 'hibernateormtest',
-                        'jdbc.url'   : 'jdbc:mysql://localhost/hibernate_orm_test'
+                        'jdbc.url'   : 'jdbc:mysql://localhost/hibernate_orm_test?cacheDefaultTimezone=false'
                 ],
                 mysql_docker : [
                         'db.dialect' : 'org.hibernate.dialect.MySQL57Dialect',
                         'jdbc.driver': 'com.mysql.jdbc.Driver',
                         'jdbc.user'  : 'hibernate_orm_test',
                         'jdbc.pass'  : 'hibernate_orm_test',
-                        'jdbc.url'   : 'jdbc:mysql://127.0.0.1/hibernate_orm_test?useSSL=false'
+                        'jdbc.url'   : 'jdbc:mysql://127.0.0.1/hibernate_orm_test?useSSL=false&cacheDefaultTimezone=false'
                 ],
                 mariadb : [
                         'db.dialect' : 'org.hibernate.dialect.MariaDB103Dialect',
