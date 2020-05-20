@@ -2917,9 +2917,14 @@ public class SessionImpl
 				}
 
 				try {
+					if ( getLoadQueryInfluencers().getEffectiveEntityGraph().getSemantic() == GraphSemantic.FETCH ) {
+						setFetchGraphLoadContext( getLoadQueryInfluencers().getEffectiveEntityGraph().getGraph() );
+					}
+
 					return executor.get();
 				}
 				finally {
+					setFetchGraphLoadContext( null );
 					if ( graphSemantic != null ) {
 						loadQueryInfluencers.getEffectiveEntityGraph().clear();
 					}
