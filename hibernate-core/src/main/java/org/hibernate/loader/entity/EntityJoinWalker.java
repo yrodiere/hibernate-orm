@@ -100,7 +100,7 @@ public class EntityJoinWalker extends AbstractEntityJoinWalker {
 			return JoinType.NONE;
 		}
 		if ( !isJoinedFetchEnabledInMapping( metadataFetchMode, associationType )
-				&& !isJoinFetchEnabledByProfile( persister, path, propertyNumber ) ) {
+				&& !isJoinFetchEnabledByInfluencers( persister, path, propertyNumber ) ) {
 			return JoinType.NONE;
 		}
 		if ( isDuplicateAssociation( lhsTable, lhsColumns, associationType ) ) {

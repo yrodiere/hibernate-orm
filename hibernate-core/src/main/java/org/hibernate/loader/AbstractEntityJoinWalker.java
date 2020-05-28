@@ -16,8 +16,11 @@ import org.hibernate.MappingException;
 import org.hibernate.engine.profile.Fetch;
 import org.hibernate.engine.profile.FetchProfile;
 import org.hibernate.engine.spi.CascadeStyle;
+import org.hibernate.engine.spi.EffectiveEntityGraph;
 import org.hibernate.engine.spi.LoadQueryInfluencers;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.graph.GraphSemantic;
+import org.hibernate.graph.spi.RootGraphImplementor;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.persister.entity.OuterJoinLoadable;
 import org.hibernate.sql.JoinFragment;
@@ -137,7 +140,12 @@ public abstract class AbstractEntityJoinWalker extends JoinWalker {
 		return isJoinedFetchEnabledInMapping( config, type );
 	}
 
-	protected final boolean isJoinFetchEnabledByProfile(OuterJoinLoadable persister, PropertyPath path, int propertyNumber) {
+	protected final boolean isJoinFetchEnabledByInfluencers(OuterJoinLoadable persister, PropertyPath path, int propertyNumber) {
+		return isJoinFetchEnabledByProfile( persister, path, propertyNumber )
+				|| isJoinFetchEnabledByEffectiveEntityGraph( persister, path, propertyNumber );
+	}
+
+	private final boolean isJoinFetchEnabledByProfile(OuterJoinLoadable persister, PropertyPath path, int propertyNumber) {
 		if ( !getLoadQueryInfluencers().hasEnabledFetchProfiles() ) {
 			// perf optimization
 			return false;
@@ -160,6 +168,18 @@ public abstract class AbstractEntityJoinWalker extends JoinWalker {
 			}
 		}
 		return false;
+	}
+
+	private boolean isJoinFetchEnabledByEffectiveEntityGraph(OuterJoinLoadable persister, PropertyPath path,
+			int propertyNumber) {
+		EffectiveEntityGraph effectiveEntityGraph = getLoadQueryInfluencers().getEffectiveEntityGraph();
+		RootGraphImplementor<?> graph = effectiveEntityGraph.getGraph();
+		if ( graph == null || effectiveEntityGraph.getSemantic() != GraphSemantic.LOAD ) {
+			return false;
+		}
+
+		return findPath(  )
+		.findAttributeNode(  )
 	}
 
 	public abstract String getComment();

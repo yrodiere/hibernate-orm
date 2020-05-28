@@ -145,7 +145,7 @@ public class CriteriaJoinWalker extends AbstractEntityJoinWalker {
 				FetchMode fetchMode = translator.getRootCriteria().getFetchMode( fullPathWithAlias );
 				if ( isDefaultFetchMode( fetchMode ) ) {
 					if ( persister != null ) {
-						if ( isJoinFetchEnabledByProfile( persister, path, propertyNumber ) ) {
+						if ( isJoinFetchEnabledByInfluencers( persister, path, propertyNumber ) ) {
 							if ( isDuplicateAssociation( lhsTable, lhsColumns, associationType ) ) {
 								resolvedJoinType = JoinType.NONE;
 							}
