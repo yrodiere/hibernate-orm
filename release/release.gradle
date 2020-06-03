@@ -1,3 +1,5 @@
+import java.nio.charset.StandardCharsets
+
 import groovy.json.JsonSlurper
 
 /*
@@ -11,10 +13,51 @@ apply from: rootProject.file( 'gradle/base-information.gradle' )
 apply plugin: 'idea'
 apply plugin: 'distribution'
 
+ext {
+    if ( !project.hasProperty( 'gitRemote' ) ) {
+        gitRemote = 'origin'
+    }
+}
+
 idea.module {
 }
 
 final File documentationDir = mkdir( "${project.buildDir}/documentation" );
+
+task releaseChecks() {
+    doFirst {
+        if ( !project.hasProperty('releaseVersion') || !project.hasProperty('developmentVersion')
+                || !project.hasProperty('gitRemote') ||!project.hasProperty('gitBranch') ) {
+            throw new GradleException(
+                    "Release tasks require all of the following properties to be set:"
+                            + "'releaseVersion', 'developmentVersion', 'gitRemote', 'gitBranch'."
+            )
+        }
+
+        logger.lifecycle( "Checking that the working tree is clean..." )
+        String uncommittedFiles = executeGitCommand( 'status', '--porcelain' )
+        if ( !uncommittedFiles.isEmpty() ) {
+            throw new GradleException(
+                    "Cannot release because there are uncommitted or untracked files in the working tree."
+                            + "\nCommit or stash your changes first."
+                            + "\nUncommitted files:\n" + uncommittedFiles
+            );
+        }
+
+        logger.lifecycle( "Switching to branch '${project.gitBranch}'..." )
+        executeGitCommand( 'switch', project.gitBranch )
+
+        logger.lifecycle( "Checking that all commits are pushed..." )
+        String diffWithUpstream = executeGitCommand( 'diff', '@{u}' )
+        if ( !diffWithUpstream.isEmpty() ) {
+            throw new GradleException(
+                    "Cannot release because there are commits on the branch to release that haven't been pushed yet."
+                            + "\nPush your commits to the branch to release first."
+            );
+        }
+
+    }
+}
 
 /**
  * Assembles all documentation into the {buildDir}/documentation directory.
@@ -244,90 +287,81 @@ artifacts {
     bundles distZip
 }
 
-task release( dependsOn: [uploadDocumentation, uploadBundlesSourceForge] )
+task release( dependsOn: [releaseChecks, uploadDocumentation, uploadBundlesSourceForge] )
 
-def gitRemote = 'origin'
-if ( project.hasProperty( 'gitRemote' ) ) {
-    gitRemote = project.property( 'gitRemote' )
-}
-
-task updateChangeLogFile {
+task addVersionCommit( dependsOn: [releaseChecks] ) {
     group = "Release"
-    description = "Updates the changelog.txt file and push the changes to github"
+    description = "Updates the changelog.txt file, adds a commit for the released version and push the changes to github"
     doFirst{
+        logger.lifecycle( "Updating version to '${project.releaseVersion}'..." )
+        project.ormVersionFile.text = "hibernateVersion=${project.releaseVersion}"
+
+        logger.lifecycle( "Appending version '${project.releaseVersion}' to changelog..." )
         ChangeLogFile.update( ormVersion.fullName );
 
-        executeGitCommand(
-                "git add .",
-                "An error occurred during the execution of git add for the changelog.txt and the release version changes."
-        )
-
-        executeGitCommand(
-                "git commit -m \"${project.ormVersion.fullName}\"",
-                "An error occurred during the execution of git commit for the changelog.txt and the release version changes."
-        )
-
-        executeGitCommand(
-                "git push ${gitRemote}",
-                "An error occurred during the execution git push for the changelog.txt and the release version changes."
-        )
+        logger.lifecycle( "Adding commit to update version to '${project.releaseVersion}'..." )
+        executeGitCommand( 'add', '.' )
+        executeGitCommand( 'commit', '-m', project.ormVersion.fullName )
     }
 }
+release.mustRunAfter addVersionCommit
 
-task ciRelease() {
+task ciRelease( dependsOn: [releaseChecks, addVersionCommit, release] ) {
     group = "Release"
     description = "Performs a release: the hibernate version is set and the changelog.txt file updated, the changes are pushed to github, then the release is performed, tagged and the hibernate version is set to the development one."
     doLast {
-        if ( !project.hasProperty( 'developmentVersion' ) ) {
-            throw new GradleException(
-                    "When the releaseVersion parameter is specified, the parameter developmentVersion is required as well."
-            )
-        }
+        String tag = null
         if ( !project.hasProperty( 'noTag' ) ) {
-            String tag = project.ormVersion.fullName
+            tag = project.ormVersion.fullName
             // the release is tagged and the tag is pushed to github
             if ( tag.endsWith( ".Final" ) ) {
                 tag = tag.replace( ".Final", "" )
             }
-            executeGitCommand(
-                    "git tag ${tag}",
-                    "An error occurred during the execution of git tag"
-            )
-            executeGitCommand(
-                    "git push ${gitRemote} ${tag}",
-                    "An error occurred during the execution of git push od the tag"
-            )
+            logger.lifecycle( "Tagging '${tag}'..." )
+            executeGitCommand( 'tag', tag )
+        }
 
-            // the hibernate version is changed to the development one and the changes are pushed to github
-            project.ormVersionFile.text = "hibernateVersion=${project.property( 'developmentVersion' )}"
-            executeGitCommand(
-                    "git add .",
-                    "An error occurred during the execution of git add for the development version change."
-            )
+        logger.lifecycle( "Adding commit to update version to '${project.developmentVersion}'..." )
+        project.ormVersionFile.text = "hibernateVersion=${project.developmentVersion}"
+        executeGitCommand( 'add', '.')
+        executeGitCommand( 'commit', '-m', project.developmentVersion )
 
-            executeGitCommand(
-                    "git commit -m \"${project.ormVersion.fullName}\"",
-                    "An error occurred during the execution of git commit for the development version change."
-            )
-
-            executeGitCommand(
-                    "git push ${gitRemote}",
-                    "An error occurred during the execution git push for the development version change."
-            )
+        if ( tag != null ) {
+            logger.lifecycle("Pushing branch and tag to remote '${project.gitRemote}'...")
+            executeGitCommand( 'push', '--atomic', project.gitRemote , project.gitBranch, tag )
+        }
+        else {
+            logger.lifecycle("Pushing branch to remote '${project.gitRemote}'...")
+            executeGitCommand( 'push', project.gitRemote , project.gitBranch )
         }
     }
 }
 
-ciRelease.dependsOn updateChangeLogFile, release
-release.mustRunAfter updateChangeLogFile
-
-void executeGitCommand(String command, String errorMessage){
+static String executeGitCommand(Object ... subcommand){
+    List<Object> command = ['git']
+    Collections.addAll( command, subcommand )
     def proc = command.execute()
-    def errorsStringBuffer = new StringBuffer()
-    proc.waitFor()
-    proc.consumeProcessErrorStream( errorsStringBuffer )
-    if ( errorsStringBuffer.toString(  ) != "" ) {
-        throw new GradleException( errorMessage + " " + b );
+    def code = proc.waitFor()
+    def stdout = inputStreamToString( proc.getInputStream() )
+    def stderr = inputStreamToString( proc.getErrorStream() )
+    if ( code != 0 ) {
+        throw new GradleException( "An error occurred while executing " + command + "\n\nstdout:\n" + stdout + "\n\nstderr:\n" + stderr )
+    }
+    return stdout
+}
+
+static String inputStreamToString(InputStream inputStream) {
+    inputStream.withCloseable { ins ->
+        new BufferedInputStream(ins).withCloseable { bis ->
+            new ByteArrayOutputStream().withCloseable { buf ->
+                int result = bis.read();
+                while (result != -1) {
+                    buf.write((byte) result);
+                    result = bis.read();
+                }
+                return buf.toString( StandardCharsets.UTF_8.name());
+            }
+        }
     }
 }
 
