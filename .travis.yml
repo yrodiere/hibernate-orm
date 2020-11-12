@@ -3,8 +3,6 @@ language: java
 
 jobs:
   include:
-    - stage: Oracle JDK 8
-      jdk: oraclejdk8
     - stage: AdoptOpenJDK 11.0.9
       install:
         - curl -L -o install-jdk.sh https://github.com/sormuras/bach/raw/master/install-jdk.sh
@@ -14,7 +12,7 @@ before_script:
   - java -version
   - ./gradlew assemble
 script:
-  - ./gradlew check -Plog-test-progress=true
+  - ./gradlew :hibernate-orm-modules:check -Plog-test-progress=true --info
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
