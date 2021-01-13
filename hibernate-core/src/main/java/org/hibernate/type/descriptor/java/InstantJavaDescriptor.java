@@ -8,6 +8,7 @@ package org.hibernate.type.descriptor.java;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -28,6 +29,12 @@ public class InstantJavaDescriptor extends AbstractTypeDescriptor<Instant> {
 	 * Singleton access
 	 */
 	public static final InstantJavaDescriptor INSTANCE = new InstantJavaDescriptor();
+
+	private static Instant MAX_SAFE_INSTANT = LocalDateTime.MAX.toInstant( ZoneOffset.MAX );
+	private static Instant MIN_SAFE_INSTANT = LocalDateTime.MIN.toInstant( ZoneOffset.MIN );
+
+	private static Instant MAX_INSTANT_FOR_UTC_LOCAL_DATE_TIME = LocalDateTime.MAX.toInstant( ZoneOffset.UTC );
+	private static Instant MIN_INSTANT_FOR_UTC_LOCAL_DATE_TIME = LocalDateTime.MIN.toInstant( ZoneOffset.UTC );
 
 	@SuppressWarnings("unchecked")
 	public InstantJavaDescriptor() {
@@ -71,13 +78,14 @@ public class InstantJavaDescriptor extends AbstractTypeDescriptor<Instant> {
 			 * (on DST end), so conversion must be done using the number of milliseconds since the epoch.
 			 * - around 1905, both methods are equally valid, so we don't really care which one is used.
 			 */
-			ZonedDateTime zonedDateTime = instant.atZone( ZoneId.systemDefault() );
-			if ( zonedDateTime.getYear() < 1905 ) {
-				return (X) Timestamp.valueOf( zonedDateTime.toLocalDateTime() );
+			ZoneId zoneId = ZoneId.systemDefault();
+			if ( canRepresentAsDateTime( instant, zoneId ) ) {
+				ZonedDateTime zonedDateTime = instant.atZone( zoneId );
+				if ( zonedDateTime.getYear() < 1905 ) {
+					return (X) Timestamp.valueOf( zonedDateTime.toLocalDateTime() );
+				}
 			}
-			else {
-				return (X) Timestamp.from( instant );
-			}
+			return (X) Timestamp.from( instant );
 		}
 
 		if ( java.sql.Date.class.isAssignableFrom( type ) ) {
@@ -97,6 +105,14 @@ public class InstantJavaDescriptor extends AbstractTypeDescriptor<Instant> {
 		}
 
 		throw unknownUnwrap( type );
+	}
+
+	private boolean canRepresentAsDateTime(Instant instant, ZoneId zoneId) {
+		long epochSecond = instant.getEpochSecond();
+		// Fast check for usual date/times
+		if (  )
+		if ( epochSecond <  )
+		return false;
 	}
 
 	@Override
