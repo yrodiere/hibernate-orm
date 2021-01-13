@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import javax.persistence.Basic;
@@ -39,11 +40,14 @@ public class InstantTest extends AbstractJavaTimeTypeTest<Instant, InstantTest.E
 			if ( !isNanosecondPrecisionSupported() ) {
 				nanosecond = 0;
 			}
-			return add( defaultTimeZone, year, month, day, hour, minute, second, nanosecond );
+			return add( defaultTimeZone, OffsetDateTime.of( year, month, day, hour, minute, second, nanosecond, ZoneOffset.UTC ).toInstant() );
+		}
+		public ParametersBuilder add(Instant instant, ZoneId defaultTimeZone) {
+			return add( defaultTimeZone, instant );
 		}
 	}
 
-	@Parameterized.Parameters(name = "{1}-{2}-{3}T{4}:{5}:{6}.{7}Z {0}")
+	@Parameterized.Parameters(name = "{1} {0}")
 	public static List<Object[]> data() {
 		return new ParametersBuilder()
 				// Not affected by any known bug
@@ -93,27 +97,59 @@ public class InstantTest extends AbstractJavaTimeTypeTest<Instant, InstantTest.E
 				.add( 1904, 12, 31, 23, 0, 0, 0, ZONE_PARIS )
 				.add( 1905, 1, 1, 0, 0, 0, 0, ZONE_PARIS )
 				.add( 1905, 1, 1, 1, 0, 0, 0, ZONE_PARIS )
+				// HHH-13482: Cannot save Instant Max or Min in Database
+				.add( Instant.MAX, ZONE_GMT )
+				.add( Instant.MAX, ZONE_PARIS )
+				.add( Instant.MAX, ZONE_AUCKLAND )
+				.add( Instant.MIN, ZONE_GMT )
+				.add( Instant.MIN, ZONE_PARIS )
+				.add( Instant.MIN, ZONE_AUCKLAND )
+				// Also for HHH-13482: Instants that would convert to something close to LocalDateTime.MAX/MIN in UTC
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.UTC ), ZONE_GMT )
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.UTC ), ZONE_PARIS )
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.UTC ), ZONE_AUCKLAND )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.UTC ), ZONE_GMT )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.UTC ), ZONE_PARIS )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.UTC ), ZONE_AUCKLAND )
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.UTC ).plus( 1, ChronoUnit.SECONDS ), ZONE_GMT )
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.UTC ).plus( 1, ChronoUnit.SECONDS ), ZONE_PARIS )
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.UTC ).plus( 1, ChronoUnit.SECONDS ), ZONE_AUCKLAND )
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.UTC ).minus( 1, ChronoUnit.SECONDS ), ZONE_GMT )
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.UTC ).minus( 1, ChronoUnit.SECONDS ), ZONE_PARIS )
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.UTC ).minus( 1, ChronoUnit.SECONDS ), ZONE_AUCKLAND )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.UTC ).plus( 1, ChronoUnit.SECONDS ), ZONE_GMT )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.UTC ).plus( 1, ChronoUnit.SECONDS ), ZONE_PARIS )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.UTC ).plus( 1, ChronoUnit.SECONDS ), ZONE_AUCKLAND )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.UTC ).minus( 1, ChronoUnit.SECONDS ), ZONE_GMT )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.UTC ).minus( 1, ChronoUnit.SECONDS ), ZONE_PARIS )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.UTC ).minus( 1, ChronoUnit.SECONDS ), ZONE_AUCKLAND )
+				// Also for HHH-13482: Instants that would convert to something close to LocalDateTime.MAX/MIN with MAX/MIN offsets
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.MAX ), ZONE_GMT )
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.MAX ), ZONE_PARIS )
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.MAX ), ZONE_AUCKLAND )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.MIN ), ZONE_GMT )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.MIN ), ZONE_PARIS )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.MIN ), ZONE_AUCKLAND )
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.MAX ).plus( 1, ChronoUnit.SECONDS ), ZONE_GMT )
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.MAX ).plus( 1, ChronoUnit.SECONDS ), ZONE_PARIS )
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.MAX ).plus( 1, ChronoUnit.SECONDS ), ZONE_AUCKLAND )
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.MAX ).minus( 1, ChronoUnit.SECONDS ), ZONE_GMT )
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.MAX ).minus( 1, ChronoUnit.SECONDS ), ZONE_PARIS )
+				.add( LocalDateTime.MAX.toInstant( ZoneOffset.MAX ).minus( 1, ChronoUnit.SECONDS ), ZONE_AUCKLAND )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.MIN ).plus( 1, ChronoUnit.SECONDS ), ZONE_GMT )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.MIN ).plus( 1, ChronoUnit.SECONDS ), ZONE_PARIS )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.MIN ).plus( 1, ChronoUnit.SECONDS ), ZONE_AUCKLAND )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.MIN ).minus( 1, ChronoUnit.SECONDS ), ZONE_GMT )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.MIN ).minus( 1, ChronoUnit.SECONDS ), ZONE_PARIS )
+				.add( LocalDateTime.MIN.toInstant( ZoneOffset.MIN ).minus( 1, ChronoUnit.SECONDS ), ZONE_AUCKLAND )
 				.build();
 	}
 
-	private final int year;
-	private final int month;
-	private final int day;
-	private final int hour;
-	private final int minute;
-	private final int second;
-	private final int nanosecond;
+	private final Instant instant;
 
-	public InstantTest(EnvironmentParameters env, int year, int month, int day,
-			int hour, int minute, int second, int nanosecond) {
+	public InstantTest(EnvironmentParameters env, Instant instant) {
 		super( env );
-		this.year = year;
-		this.month = month;
-		this.day = day;
-		this.hour = hour;
-		this.minute = minute;
-		this.second = second;
-		this.nanosecond = nanosecond;
+		this.instant = instant;
 	}
 
 	@Override
@@ -128,7 +164,7 @@ public class InstantTest extends AbstractJavaTimeTypeTest<Instant, InstantTest.E
 
 	@Override
 	protected Instant getExpectedPropertyValueAfterHibernateRead() {
-		return OffsetDateTime.of( year, month, day, hour, minute, second, nanosecond, ZoneOffset.UTC ).toInstant();
+		return instant;
 	}
 
 	@Override
