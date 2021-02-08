@@ -40,6 +40,8 @@ public class PooledLoThreadLocalOptimizer extends AbstractOptimizer {
 		private IntegralDataTypeHolder upperLimitValue;
 	}
 
+	private final ThreadLocal<GenerationStates> localStates = ThreadLocal.withInitial( GenerationStates::new );
+
 	/**
 	 * Constructs a PooledLoThreadLocalOptimizer.
 	 *
@@ -56,16 +58,8 @@ public class PooledLoThreadLocalOptimizer extends AbstractOptimizer {
 
 	@Override
 	public Serializable generate(AccessCallback callback) {
-		if ( callback.getTenantIdentifier() == null ) {
-			final GenerationState local = localAssignedIds.get();
-			return generate( local, callback );
-		}
-
-		synchronized (this) {
-			final GenerationState generationState = locateGenerationState( callback.getTenantIdentifier() );
-
-			return generate(generationState, callback);
-		}
+		final GenerationState generationState = locateGenerationState( callback.getTenantIdentifier() );
+		return generate( generationState, callback );
 	}
 
 	private Serializable generate(GenerationState generationState, AccessCallback callback) {
@@ -82,25 +76,26 @@ public class PooledLoThreadLocalOptimizer extends AbstractOptimizer {
 		return generationState.value.makeValueThenIncrement();
 	}
 
-	private Map<String, GenerationState> tenantSpecificState;
-	private final ThreadLocal<GenerationState> localAssignedIds = ThreadLocal.withInitial( GenerationState::new );
-
 	private GenerationState locateGenerationState(String tenantIdentifier) {
+		GenerationStates states = localStates.get();
 		if ( tenantIdentifier == null ) {
-			return localAssignedIds.get();
+			if ( states.noTenant == null ) {
+				states.noTenant = new GenerationState();
+			}
+			return states.noTenant;
 		}
 		else {
 			GenerationState state;
-			if ( tenantSpecificState == null ) {
-				tenantSpecificState = new HashMap<String, GenerationState>();
+			if ( states.tenantSpecific == null ) {
+				states.tenantSpecific = new HashMap<>();
 				state = new GenerationState();
-				tenantSpecificState.put( tenantIdentifier, state );
+				states.tenantSpecific.put( tenantIdentifier, state );
 			}
 			else {
-				state = tenantSpecificState.get( tenantIdentifier );
+				state = states.tenantSpecific.get( tenantIdentifier );
 				if ( state == null ) {
 					state = new GenerationState();
-					tenantSpecificState.put( tenantIdentifier, state );
+					states.tenantSpecific.put( tenantIdentifier, state );
 				}
 			}
 			return state;
@@ -126,5 +121,11 @@ public class PooledLoThreadLocalOptimizer extends AbstractOptimizer {
 	@Override
 	public boolean applyIncrementSizeToSourceValues() {
 		return true;
+	}
+
+	private static class GenerationStates {
+		// last value read from db source
+		private GenerationState noTenant;
+		private Map<String, GenerationState> tenantSpecific;
 	}
 }
