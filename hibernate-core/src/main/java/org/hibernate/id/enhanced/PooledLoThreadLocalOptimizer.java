@@ -31,15 +31,6 @@ public class PooledLoThreadLocalOptimizer extends AbstractOptimizer {
 			PooledLoOptimizer.class.getName()
 	);
 
-	private static class GenerationState {
-		// last value read from db source
-		private IntegralDataTypeHolder lastSourceValue;
-		// the current generator value
-		private IntegralDataTypeHolder value;
-		// the value at which we'll hit the db again
-		private IntegralDataTypeHolder upperLimitValue;
-	}
-
 	private final ThreadLocal<GenerationStates> localStates = ThreadLocal.withInitial( GenerationStates::new );
 
 	/**
@@ -58,22 +49,8 @@ public class PooledLoThreadLocalOptimizer extends AbstractOptimizer {
 
 	@Override
 	public Serializable generate(AccessCallback callback) {
-		final GenerationState generationState = locateGenerationState( callback.getTenantIdentifier() );
-		return generate( generationState, callback );
-	}
-
-	private Serializable generate(GenerationState generationState, AccessCallback callback) {
-		if ( generationState.value == null
-				|| !generationState.value.lt( generationState.upperLimitValue ) ) {
-			generationState.lastSourceValue = callback.getNextValue();
-			generationState.upperLimitValue = generationState.lastSourceValue.copy().add( incrementSize );
-			generationState.value = generationState.lastSourceValue.copy();
-			// handle cases where initial-value is less that one (hsqldb for instance).
-			while ( generationState.value.lt( 1 ) ) {
-				generationState.value.increment();
-			}
-		}
-		return generationState.value.makeValueThenIncrement();
+		return locateGenerationState( callback.getTenantIdentifier() )
+				.generate( callback, incrementSize );
 	}
 
 	private GenerationState locateGenerationState(String tenantIdentifier) {
@@ -127,5 +104,27 @@ public class PooledLoThreadLocalOptimizer extends AbstractOptimizer {
 		// last value read from db source
 		private GenerationState noTenant;
 		private Map<String, GenerationState> tenantSpecific;
+	}
+
+	private static class GenerationState {
+		// last value read from db source
+		private IntegralDataTypeHolder lastSourceValue;
+		// the current generator value
+		private IntegralDataTypeHolder value;
+		// the value at which we'll hit the db again
+		private IntegralDataTypeHolder upperLimitValue;
+
+		private Serializable generate(AccessCallback callback, int incrementSize) {
+			if ( value == null || !value.lt( upperLimitValue ) ) {
+				lastSourceValue = callback.getNextValue();
+				upperLimitValue = lastSourceValue.copy().add( incrementSize );
+				value = lastSourceValue.copy();
+				// handle cases where initial-value is less that one (hsqldb for instance).
+				while ( value.lt( 1 ) ) {
+					value.increment();
+				}
+			}
+			return value.makeValueThenIncrement();
+		}
 	}
 }
