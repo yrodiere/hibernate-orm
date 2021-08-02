@@ -7,6 +7,7 @@
 package org.hibernate.mapping;
 import org.hibernate.MappingException;
 import org.hibernate.dialect.Dialect;
+import org.hibernate.engine.spi.Mapping;
 import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.id.factory.IdentifierGeneratorFactory;
 
@@ -18,12 +19,16 @@ import org.hibernate.id.factory.IdentifierGeneratorFactory;
  */
 public interface KeyValue extends Value {
 
+	void finalizeMetadata(Dialect dialect, Mapping mapping);
+
 	public IdentifierGenerator createIdentifierGenerator(
 			IdentifierGeneratorFactory identifierGeneratorFactory,
 			Dialect dialect,
 			String defaultCatalog,
 			String defaultSchema,
 			RootClass rootClass) throws MappingException;
+
+	boolean isIdentityColumn();
 
 	public boolean isIdentityColumn(IdentifierGeneratorFactory identifierGeneratorFactory, Dialect dialect);
 	

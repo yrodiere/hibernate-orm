@@ -6,6 +6,8 @@
  */
 package org.hibernate.mapping;
 
+import static org.hibernate.internal.util.StringHelper.safeInterning;
+
 import java.io.Serializable;
 import java.util.Locale;
 
@@ -17,8 +19,6 @@ import org.hibernate.engine.spi.Mapping;
 import org.hibernate.internal.util.StringHelper;
 import org.hibernate.loader.internal.AliasConstantsHelper;
 import org.hibernate.sql.Template;
-
-import static org.hibernate.internal.util.StringHelper.safeInterning;
 
 /**
  * A column of a relational database table
@@ -54,6 +54,11 @@ public class Column implements Selectable, Serializable, Cloneable {
 
 	public Column(String columnName) {
 		setName( columnName );
+	}
+
+	void finalizeMetadata(Dialect dialect, Mapping mapping) {
+		sqlTypeCode = getSqlTypeCode( mapping );
+		sqlType = dialect.getTypeName( sqlTypeCode, getLength(), getPrecision(), getScale() );
 	}
 
 	public int getLength() {
@@ -194,6 +199,10 @@ public class Column implements Selectable, Serializable, Cloneable {
 				name.equalsIgnoreCase( column.name );
 	}
 
+	/**
+	 * @deprecated Use {@link #getSqlTypeCode()} instead.
+	 */
+	@Deprecated
 	public int getSqlTypeCode(Mapping mapping) throws MappingException {
 		org.hibernate.type.Type type = getValue().getType();
 		try {

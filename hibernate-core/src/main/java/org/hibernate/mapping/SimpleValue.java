@@ -93,6 +93,7 @@ public class SimpleValue implements KeyValue {
 
 	private ConverterDescriptor attributeConverterDescriptor;
 	private Type type;
+	private boolean isIdentityColumn;
 
 	/**
 	 * @deprecated Use {@link SimpleValue#SimpleValue(MetadataBuildingContext)} instead.
@@ -265,6 +266,11 @@ public class SimpleValue implements KeyValue {
 
 	private IdentifierGenerator identifierGenerator;
 
+	@Override
+	public void finalizeMetadata(Dialect dialect, Mapping mapping) {
+		isIdentityColumn = isIdentityColumn( mapping.getIdentifierGeneratorFactory(), dialect );
+	}
+
 	/**
 	 * Returns the cached identifierGenerator.
 	 *
@@ -386,7 +392,12 @@ public class SimpleValue implements KeyValue {
 	public String getIdentifierGeneratorStrategy() {
 		return identifierGeneratorStrategy;
 	}
-	
+
+	@Override
+	public boolean isIdentityColumn() {
+		return isIdentityColumn;
+	}
+
 	public boolean isIdentityColumn(IdentifierGeneratorFactory identifierGeneratorFactory, Dialect dialect) {
 		identifierGeneratorFactory.setDialect( dialect );
 		return IdentityGenerator.class.isAssignableFrom(identifierGeneratorFactory.getIdentifierGeneratorClass( identifierGeneratorStrategy ));
