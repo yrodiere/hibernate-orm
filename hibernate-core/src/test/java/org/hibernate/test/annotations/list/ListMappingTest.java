@@ -95,7 +95,7 @@ public class ListMappingTest extends BaseUnitTestCase {
 		TargetImpl target = new TargetImpl();
 
 		new SchemaCreatorImpl( ssr ).doCreation(
-				metadata,
+				metadata.forSchemaTool(),
 				true,
 				target
 		);

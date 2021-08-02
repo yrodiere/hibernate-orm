@@ -6,10 +6,10 @@
  */
 package org.hibernate.tool.schema.internal;
 
-import org.hibernate.boot.Metadata;
 import org.hibernate.boot.model.relational.AuxiliaryDatabaseObject;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.tool.schema.spi.Exporter;
+import org.hibernate.tool.schema.spi.SchemaActionMetadata;
 
 /**
  * @author Steve Ebersole
@@ -22,12 +22,12 @@ public class StandardAuxiliaryDatabaseObjectExporter implements Exporter<Auxilia
 	}
 
 	@Override
-	public String[] getSqlCreateStrings(AuxiliaryDatabaseObject object, Metadata metadata) {
+	public String[] getSqlCreateStrings(AuxiliaryDatabaseObject object, SchemaActionMetadata metadata) {
 		return object.sqlCreateStrings( dialect );
 	}
 
 	@Override
-	public String[] getSqlDropStrings(AuxiliaryDatabaseObject object, Metadata metadata) {
+	public String[] getSqlDropStrings(AuxiliaryDatabaseObject object, SchemaActionMetadata metadata) {
 		return object.sqlDropStrings( dialect );
 	}
 }

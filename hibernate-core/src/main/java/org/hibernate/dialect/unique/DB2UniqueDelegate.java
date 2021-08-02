@@ -11,6 +11,7 @@ import java.util.Iterator;
 import org.hibernate.boot.Metadata;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.mapping.UniqueKey;
+import org.hibernate.tool.schema.spi.SchemaActionMetadata;
 
 /**
  * DB2 does not allow unique constraints on nullable columns.  Rather than
@@ -29,7 +30,7 @@ public class DB2UniqueDelegate extends DefaultUniqueDelegate {
 	}
 
 	@Override
-	public String getAlterTableToAddUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata) {
+	public String getAlterTableToAddUniqueKeyCommand(UniqueKey uniqueKey, SchemaActionMetadata metadata) {
 		if ( hasNullable( uniqueKey ) ) {
 			return org.hibernate.mapping.Index.buildSqlCreateIndexString(
 					dialect,
@@ -47,7 +48,7 @@ public class DB2UniqueDelegate extends DefaultUniqueDelegate {
 	}
 	
 	@Override
-	public String getAlterTableToDropUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata) {
+	public String getAlterTableToDropUniqueKeyCommand(UniqueKey uniqueKey, SchemaActionMetadata metadata) {
 		if ( hasNullable( uniqueKey ) ) {
 			return org.hibernate.mapping.Index.buildSqlDropIndexString(
 					uniqueKey.getName(),

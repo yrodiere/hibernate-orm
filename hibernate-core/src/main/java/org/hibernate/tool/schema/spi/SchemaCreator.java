@@ -28,5 +28,19 @@ public interface SchemaCreator {
 	 * @param sourceDescriptor description of the source(s) of creation commands
 	 * @param targetDescriptor description of the target(s) for the creation commands
 	 */
-	void doCreation(Metadata metadata, ExecutionOptions options, SourceDescriptor sourceDescriptor, TargetDescriptor targetDescriptor);
+	void doCreation(SchemaActionMetadata metadata, ExecutionOptions options, SourceDescriptor sourceDescriptor, TargetDescriptor targetDescriptor);
+
+	/**
+	 * Perform a schema creation from the indicated source(s) to the indicated target(s).
+	 *
+	 * @param metadata Represents the schema to be created.
+	 * @param options Options for executing the creation
+	 * @param sourceDescriptor description of the source(s) of creation commands
+	 * @param targetDescriptor description of the target(s) for the creation commands
+	 * @deprecated Use {@link #doCreation(SchemaActionMetadata, ExecutionOptions, SourceDescriptor, TargetDescriptor)} instead.
+	 */
+	@Deprecated
+	default void doCreation(Metadata metadata, ExecutionOptions options, SourceDescriptor sourceDescriptor, TargetDescriptor targetDescriptor) {
+		doCreation( metadata.forSchemaToolLegacy(), options, sourceDescriptor, targetDescriptor );
+	}
 }

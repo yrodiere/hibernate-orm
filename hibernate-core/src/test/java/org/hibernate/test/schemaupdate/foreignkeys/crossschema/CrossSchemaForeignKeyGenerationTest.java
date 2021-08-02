@@ -170,7 +170,7 @@ public class CrossSchemaForeignKeyGenerationTest extends BaseUnitTestCase {
 		);
 
 		new SchemaDropperImpl( tool ).doDrop(
-				metadata,
+				metadata.forSchemaTool(),
 				options,
 				ssr.getService( JdbcEnvironment.class ).getDialect(),
 				new SourceDescriptor() {
@@ -225,7 +225,7 @@ public class CrossSchemaForeignKeyGenerationTest extends BaseUnitTestCase {
 		);
 
 		new SchemaDropperImpl( tool ).doDrop(
-				metadata,
+				metadata.forSchemaTool(),
 				options,
 				ssr.getService( JdbcEnvironment.class ).getDialect(),
 				new SourceDescriptor() {

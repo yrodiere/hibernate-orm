@@ -247,7 +247,7 @@ public class DatabaseTimeZoneMultiTenancyTest extends BaseUnitTestCase {
         );
 
         new SchemaDropperImpl( serviceRegistry ).doDrop(
-                metadata,
+                metadata.forSchemaTool(),
                 serviceRegistry,
                 settings,
                 true,
@@ -256,7 +256,7 @@ public class DatabaseTimeZoneMultiTenancyTest extends BaseUnitTestCase {
         );
 
         new SchemaCreatorImpl( serviceRegistry ).doCreation(
-                metadata,
+                metadata.forSchemaTool(),
                 serviceRegistry,
                 settings,
                 true,

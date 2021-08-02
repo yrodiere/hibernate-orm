@@ -49,6 +49,7 @@ import org.hibernate.tool.schema.spi.CommandAcceptanceException;
 import org.hibernate.tool.schema.spi.DelayedDropAction;
 import org.hibernate.tool.schema.spi.ExceptionHandler;
 import org.hibernate.tool.schema.spi.ExecutionOptions;
+import org.hibernate.tool.schema.spi.SchemaActionMetadata;
 import org.hibernate.tool.schema.spi.SchemaDropper;
 import org.hibernate.tool.schema.spi.SchemaFilter;
 import org.hibernate.tool.schema.spi.SchemaManagementException;
@@ -97,7 +98,7 @@ public class SchemaDropperImpl implements SchemaDropper {
 
 	@Override
 	public void doDrop(
-			Metadata metadata,
+			SchemaActionMetadata metadata,
 			ExecutionOptions options,
 			SourceDescriptor sourceDescriptor,
 			TargetDescriptor targetDescriptor) {
@@ -113,7 +114,7 @@ public class SchemaDropperImpl implements SchemaDropper {
 	}
 
 	public void doDrop(
-			Metadata metadata,
+			SchemaActionMetadata metadata,
 			ExecutionOptions options,
 			Dialect dialect,
 			SourceDescriptor sourceDescriptor,
@@ -138,7 +139,7 @@ public class SchemaDropperImpl implements SchemaDropper {
 	}
 
 	private void performDrop(
-			Metadata metadata,
+			SchemaActionMetadata metadata,
 			ExecutionOptions options,
 			Dialect dialect,
 			SourceDescriptor sourceDescriptor,
@@ -181,7 +182,7 @@ public class SchemaDropperImpl implements SchemaDropper {
 	}
 
 	private void dropFromMetadata(
-			Metadata metadata,
+			SchemaActionMetadata metadata,
 			ExecutionOptions options,
 			Dialect dialect,
 			Formatter formatter,
@@ -307,7 +308,7 @@ public class SchemaDropperImpl implements SchemaDropper {
 
 	private void applyConstraintDropping(
 			Namespace namespace,
-			Metadata metadata,
+			SchemaActionMetadata metadata,
 			Formatter formatter,
 			ExecutionOptions options,
 			GenerationTarget... targets) {
@@ -387,7 +388,7 @@ public class SchemaDropperImpl implements SchemaDropper {
 	 *
 	 * @return The generation commands
 	 */
-	public List<String> generateDropCommands(Metadata metadata, final boolean manageNamespaces) {
+	public List<String> generateDropCommands(SchemaActionMetadata metadata, final boolean manageNamespaces) {
 		final JournalingGenerationTarget target = new JournalingGenerationTarget();
 
 		final ServiceRegistry serviceRegistry = ( (MetadataImplementor) metadata ).getMetadataBuildingOptions()
@@ -418,7 +419,7 @@ public class SchemaDropperImpl implements SchemaDropper {
 
 	@Override
 	public DelayedDropAction buildDelayedAction(
-			Metadata metadata,
+			SchemaActionMetadata metadata,
 			ExecutionOptions options,
 			SourceDescriptor sourceDescriptor) {
 		final JournalingGenerationTarget target = new JournalingGenerationTarget();
@@ -429,7 +430,7 @@ public class SchemaDropperImpl implements SchemaDropper {
 	/**
 	 * For tests
 	 */
-	public void doDrop(Metadata metadata, boolean manageNamespaces, GenerationTarget... targets) {
+	public void doDrop(SchemaActionMetadata metadata, boolean manageNamespaces, GenerationTarget... targets) {
 		final ServiceRegistry serviceRegistry = ( (MetadataImplementor) metadata ).getMetadataBuildingOptions().getServiceRegistry();
 		doDrop(
 				metadata,
@@ -444,9 +445,9 @@ public class SchemaDropperImpl implements SchemaDropper {
 	 * For tests
 	 */
 	public void doDrop(
-			Metadata metadata,
+			SchemaActionMetadata metadata,
 			final ServiceRegistry serviceRegistry,
-			final Map settings,
+			final Map<?, ?> settings,
 			final boolean manageNamespaces,
 			GenerationTarget... targets) {
 		if ( targets == null || targets.length == 0 ) {

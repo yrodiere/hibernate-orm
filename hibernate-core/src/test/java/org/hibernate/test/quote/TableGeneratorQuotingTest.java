@@ -69,14 +69,14 @@ public class TableGeneratorQuotingTest extends BaseUnitTestCase {
 		try {
 			final GenerationTarget target = new GenerationTargetToDatabase( ddlTransactionIsolator, false );
 			try {
-				new SchemaCreatorImpl( serviceRegistry ).doCreation( metadata, false, target );
+				new SchemaCreatorImpl( serviceRegistry ).doCreation( metadata.forSchemaTool(), false, target );
 				new SchemaValidator().validate( metadata );
 			}
 			catch (HibernateException e) {
 				fail( "The identifier generator table should have validated.  " + e.getMessage() );
 			}
 			finally {
-				new SchemaDropperImpl( serviceRegistry ).doDrop( metadata, false, target );
+				new SchemaDropperImpl( serviceRegistry ).doDrop( metadata.forSchemaTool(), false, target );
 			}
 		}
 		finally {

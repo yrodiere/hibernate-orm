@@ -6,11 +6,11 @@
  */
 package org.hibernate.tool.schema.internal;
 
-import org.hibernate.boot.Metadata;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.mapping.Constraint;
 import org.hibernate.mapping.UniqueKey;
 import org.hibernate.tool.schema.spi.Exporter;
+import org.hibernate.tool.schema.spi.SchemaActionMetadata;
 
 /**
  * Unique constraint Exporter.  Note that it's parameterized for Constraint, rather than UniqueKey.  This is
@@ -26,7 +26,7 @@ public class StandardUniqueKeyExporter implements Exporter<Constraint> {
 	}
 
 	@Override
-	public String[] getSqlCreateStrings(Constraint constraint, Metadata metadata) {
+	public String[] getSqlCreateStrings(Constraint constraint, SchemaActionMetadata metadata) {
 		return new String[] {
 				dialect.getUniqueDelegate().getAlterTableToAddUniqueKeyCommand(
 						(UniqueKey) constraint,
@@ -36,7 +36,7 @@ public class StandardUniqueKeyExporter implements Exporter<Constraint> {
 	}
 
 	@Override
-	public String[] getSqlDropStrings(Constraint constraint, Metadata metadata) {
+	public String[] getSqlDropStrings(Constraint constraint, SchemaActionMetadata metadata) {
 		return new String[] {
 				dialect.getUniqueDelegate().getAlterTableToDropUniqueKeyCommand(
 						(UniqueKey) constraint,

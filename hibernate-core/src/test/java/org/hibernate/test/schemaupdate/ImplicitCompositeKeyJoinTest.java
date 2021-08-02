@@ -47,7 +47,7 @@ public class ImplicitCompositeKeyJoinTest {
 			boolean createTableEmployeeFound = false;
 
 			final List<String> commands = new SchemaCreatorImpl( ssr ).generateCreationCommands(
-					metadata,
+					metadata.forSchemaTool(),
 					false
 			);
 

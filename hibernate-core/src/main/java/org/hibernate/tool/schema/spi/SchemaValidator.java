@@ -22,5 +22,15 @@ public interface SchemaValidator {
 	 * @param metadata Represents the schema to be validated
 	 * @param options Options for executing the validation
 	 */
+	void doValidation(SchemaActionMetadata metadata, ExecutionOptions options);
+
+	/**
+	 * Perform the validation of the schema described by Metadata
+	 *
+	 * @param metadata Represents the schema to be validated
+	 * @param options Options for executing the validation
+	 * @deprecated Use {@link #doValidation(SchemaActionMetadata, ExecutionOptions)} instead.
+	 */
+	@Deprecated
 	void doValidation(Metadata metadata, ExecutionOptions options);
 }

@@ -25,6 +25,9 @@ import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.FetchProfile;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
+import org.hibernate.tool.schema.LegacySchemaActionMetadata;
+import org.hibernate.tool.schema.LightSchemaActionMetadata;
+import org.hibernate.tool.schema.spi.SchemaActionMetadata;
 
 /**
  * Represents the ORM model as determined from all provided mapping sources.
@@ -37,6 +40,7 @@ import org.hibernate.mapping.Table;
  * @since 5.0
  */
 public interface Metadata extends Mapping {
+
 	/**
 	 * Get the builder for {@link org.hibernate.SessionFactory} instances based on this metamodel.
 	 *
@@ -185,4 +189,22 @@ public interface Metadata extends Mapping {
 	java.util.Collection<Table> collectTableMappings();
 
 	Map<String,SQLFunction> getSqlFunctionMap();
+
+	/**
+	 * @return A {@link SchemaActionMetadata}.
+	 */
+	default SchemaActionMetadata forSchemaTool() {
+		return new LightSchemaActionMetadata( this );
+	}
+
+	/**
+	 * @return A {@link SchemaActionMetadata} which provides access to the full {@link Metadata}
+	 * through {@link SchemaActionMetadata#getFullMetadataOrFail()}.
+	 * @deprecated Use {@link #forSchemaTool()} instead.
+	 * Schema tools should not rely on the full {@link Metadata}.
+	 */
+	@Deprecated
+	default SchemaActionMetadata forSchemaToolLegacy() {
+		return new LegacySchemaActionMetadata( this );
+	}
 }

@@ -96,7 +96,7 @@ public abstract class AbstractSchemaBasedMultiTenancyTest<T extends MultiTenantC
 		);
 
 		new SchemaDropperImpl( serviceRegistry ).doDrop(
-				metadata,
+				metadata.forSchemaTool(),
 				serviceRegistry,
 				settings,
 				true,
@@ -105,7 +105,7 @@ public abstract class AbstractSchemaBasedMultiTenancyTest<T extends MultiTenantC
 		);
 
 		new SchemaCreatorImpl( serviceRegistry ).doCreation(
-				metadata,
+				metadata.forSchemaTool(),
 				serviceRegistry,
 				settings,
 				true,

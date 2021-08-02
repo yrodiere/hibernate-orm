@@ -84,6 +84,7 @@ import org.hibernate.tool.schema.extract.internal.SequenceInformationExtractorHA
 import org.hibernate.tool.schema.extract.spi.SequenceInformationExtractor;
 import org.hibernate.tool.schema.internal.StandardTableExporter;
 import org.hibernate.tool.schema.spi.Exporter;
+import org.hibernate.tool.schema.spi.SchemaActionMetadata;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.descriptor.ValueBinder;
 import org.hibernate.type.descriptor.ValueExtractor;
@@ -728,13 +729,13 @@ public abstract class AbstractHANADialect extends Dialect {
 	private final StandardTableExporter hanaTableExporter = new StandardTableExporter( this ) {
 
 		@Override
-		public String[] getSqlCreateStrings(org.hibernate.mapping.Table table, org.hibernate.boot.Metadata metadata) {
+		public String[] getSqlCreateStrings(org.hibernate.mapping.Table table, SchemaActionMetadata metadata) {
 			String[] sqlCreateStrings = super.getSqlCreateStrings( table, metadata );
 			return quoteTypeIfNecessary( table, sqlCreateStrings, getCreateTableString() );
 		}
 
 		@Override
-		public String[] getSqlDropStrings(Table table, org.hibernate.boot.Metadata metadata) {
+		public String[] getSqlDropStrings(Table table, SchemaActionMetadata metadata) {
 			String[] sqlDropStrings = super.getSqlDropStrings( table, metadata );
 			return quoteTypeIfNecessary( table, sqlDropStrings, "drop table" );
 		}

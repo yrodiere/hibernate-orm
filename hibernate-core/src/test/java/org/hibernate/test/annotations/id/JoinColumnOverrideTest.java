@@ -56,7 +56,8 @@ public class JoinColumnOverrideTest extends BaseUnitTestCase {
 			boolean foundPointyToothCreate = false;
 			boolean foundTwinkleToesCreate = false;
 
-			List<String> commands = new SchemaCreatorImpl( ssr ).generateCreationCommands( metadata, false );
+			List<String> commands = new SchemaCreatorImpl( ssr )
+					.generateCreationCommands( metadata.forSchemaTool(), false );
 			for ( String command : commands ) {
 				log.debug( command );
 

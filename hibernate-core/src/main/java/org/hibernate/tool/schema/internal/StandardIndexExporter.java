@@ -9,7 +9,6 @@ package org.hibernate.tool.schema.internal;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.hibernate.boot.Metadata;
 import org.hibernate.boot.model.relational.QualifiedNameImpl;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
@@ -17,6 +16,7 @@ import org.hibernate.internal.util.StringHelper;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Index;
 import org.hibernate.tool.schema.spi.Exporter;
+import org.hibernate.tool.schema.spi.SchemaActionMetadata;
 
 /**
  * @author Steve Ebersole
@@ -29,7 +29,7 @@ public class StandardIndexExporter implements Exporter<Index> {
 	}
 
 	@Override
-	public String[] getSqlCreateStrings(Index index, Metadata metadata) {
+	public String[] getSqlCreateStrings(Index index, SchemaActionMetadata metadata) {
 		final JdbcEnvironment jdbcEnvironment = metadata.getDatabase().getJdbcEnvironment();
 		final String tableName = jdbcEnvironment.getQualifiedObjectNameFormatter().format(
 				index.getTable().getQualifiedTableName(),
@@ -78,7 +78,7 @@ public class StandardIndexExporter implements Exporter<Index> {
 	}
 
 	@Override
-	public String[] getSqlDropStrings(Index index, Metadata metadata) {
+	public String[] getSqlDropStrings(Index index, SchemaActionMetadata metadata) {
 		if ( !dialect.dropConstraints() ) {
 			return NO_COMMANDS;
 		}

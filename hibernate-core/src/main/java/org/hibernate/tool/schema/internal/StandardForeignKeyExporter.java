@@ -10,12 +10,12 @@ import java.util.Iterator;
 import java.util.Locale;
 
 import org.hibernate.AssertionFailure;
-import org.hibernate.boot.Metadata;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.ForeignKey;
 import org.hibernate.tool.schema.spi.Exporter;
+import org.hibernate.tool.schema.spi.SchemaActionMetadata;
 
 /**
  * @author Steve Ebersole
@@ -31,7 +31,7 @@ public class StandardForeignKeyExporter implements Exporter<ForeignKey> {
 	}
 
 	@Override
-	public String[] getSqlCreateStrings(ForeignKey foreignKey, Metadata metadata) {
+	public String[] getSqlCreateStrings(ForeignKey foreignKey, SchemaActionMetadata metadata) {
 		if ( !dialect.hasAlterTable() ) {
 			return NO_COMMANDS;
 		}
@@ -126,7 +126,7 @@ public class StandardForeignKeyExporter implements Exporter<ForeignKey> {
 	}
 
 	@Override
-	public String[] getSqlDropStrings(ForeignKey foreignKey, Metadata metadata) {
+	public String[] getSqlDropStrings(ForeignKey foreignKey, SchemaActionMetadata metadata) {
 		if ( !dialect.hasAlterTable() ) {
 			return NO_COMMANDS;
 		}

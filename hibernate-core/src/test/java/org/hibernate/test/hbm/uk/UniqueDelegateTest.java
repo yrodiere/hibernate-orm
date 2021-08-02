@@ -20,6 +20,7 @@ import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
 import org.hibernate.tool.schema.internal.SchemaCreatorImpl;
 import org.hibernate.tool.schema.internal.SchemaDropperImpl;
+import org.hibernate.tool.schema.spi.SchemaActionMetadata;
 
 import org.hibernate.testing.TestForIssue;
 import org.hibernate.testing.junit4.BaseUnitTestCase;
@@ -64,13 +65,13 @@ public class UniqueDelegateTest extends BaseUnitTestCase {
 				.buildMetadata();
 
 		final JournalingSchemaToolingTarget target = new JournalingSchemaToolingTarget();
-		new SchemaCreatorImpl( ssr ).doCreation( metadata, false, target );
+		new SchemaCreatorImpl( ssr ).doCreation( metadata.forSchemaTool(), false, target );
 
 		assertThat( getAlterTableToAddUniqueKeyCommandCallCount, equalTo( 1 ) );
 		assertThat( getColumnDefinitionUniquenessFragmentCallCount, equalTo( 1 ) );
 		assertThat( getTableCreationUniqueConstraintsFragmentCallCount, equalTo( 1 ) );
 
-		new SchemaDropperImpl( ssr ).doDrop( metadata, false, target );
+		new SchemaDropperImpl( ssr ).doDrop( metadata.forSchemaTool(), false, target );
 
 		// unique keys are not dropped explicitly
 		assertThat( getAlterTableToAddUniqueKeyCommandCallCount, equalTo( 1 ) );
@@ -116,14 +117,14 @@ public class UniqueDelegateTest extends BaseUnitTestCase {
 
 		@Override
 		public String getAlterTableToAddUniqueKeyCommand(
-				UniqueKey uniqueKey, Metadata metadata) {
+				UniqueKey uniqueKey, SchemaActionMetadata metadata) {
 			getAlterTableToAddUniqueKeyCommandCallCount++;
 			return super.getAlterTableToAddUniqueKeyCommand( uniqueKey, metadata );
 		}
 
 		@Override
 		public String getAlterTableToDropUniqueKeyCommand(
-				UniqueKey uniqueKey, Metadata metadata) {
+				UniqueKey uniqueKey, SchemaActionMetadata metadata) {
 			getAlterTableToDropUniqueKeyCommandCallCount++;
 			return super.getAlterTableToDropUniqueKeyCommand( uniqueKey, metadata );
 		}

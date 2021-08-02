@@ -122,7 +122,7 @@ public class SuppliedConnectionTest extends ConnectionManagementTestCase {
 						true
 				);
 				new SchemaCreatorImpl( serviceRegistry() ).doCreation(
-						metadata(),
+						metadata().forSchemaTool(),
 						false,
 						target
 				);
@@ -149,7 +149,7 @@ public class SuppliedConnectionTest extends ConnectionManagementTestCase {
 						),
 						true
 				);
-				new SchemaDropperImpl( serviceRegistry() ).doDrop( metadata(), false, target );
+				new SchemaDropperImpl( serviceRegistry() ).doDrop( metadata().forSchemaTool(), false, target );
 			}
 			finally {
 				cp.closeConnection( conn );

@@ -56,7 +56,7 @@ public class CollectionKeyFkNameTest extends BaseUnitTestCase {
 
 		final JournalingSchemaToolingTarget target = new JournalingSchemaToolingTarget();
 		new SchemaCreatorImpl( ssr ).doCreation(
-				metadata,
+				metadata.forSchemaTool(),
 				ssr,
 				ssr.getService( ConfigurationService.class ).getSettings(),
 				false,

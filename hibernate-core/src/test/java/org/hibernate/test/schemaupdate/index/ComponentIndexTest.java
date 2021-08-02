@@ -45,7 +45,7 @@ public class ComponentIndexTest {
 	@Test
 	public void testTheIndexIsGenerated() {
 		final List<String> commands = new SchemaCreatorImpl( ssr ).generateCreationCommands(
-				metadata,
+				metadata.forSchemaTool(),
 				false
 		);
 

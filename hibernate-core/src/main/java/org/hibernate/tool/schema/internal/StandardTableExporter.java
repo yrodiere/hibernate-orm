@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.hibernate.boot.Metadata;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.relational.InitCommand;
 import org.hibernate.boot.model.relational.QualifiedName;
@@ -23,6 +22,7 @@ import org.hibernate.mapping.Constraint;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
 import org.hibernate.tool.schema.spi.Exporter;
+import org.hibernate.tool.schema.spi.SchemaActionMetadata;
 
 /**
  * @author Steve Ebersole
@@ -35,7 +35,7 @@ public class StandardTableExporter implements Exporter<Table> {
 	}
 
 	@Override
-	public String[] getSqlCreateStrings(Table table, Metadata metadata) {
+	public String[] getSqlCreateStrings(Table table, SchemaActionMetadata metadata) {
 		final QualifiedName tableName = new QualifiedNameParser.NameParts(
 				Identifier.toIdentifier( table.getCatalog(), table.isCatalogQuoted() ),
 				Identifier.toIdentifier( table.getSchema(), table.isSchemaQuoted() ),
@@ -200,7 +200,7 @@ public class StandardTableExporter implements Exporter<Table> {
 	}
 
 	@Override
-	public String[] getSqlDropStrings(Table table, Metadata metadata) {
+	public String[] getSqlDropStrings(Table table, SchemaActionMetadata metadata) {
 		StringBuilder buf = new StringBuilder( "drop table " );
 		if ( dialect.supportsIfExistsBeforeTableName() ) {
 			buf.append( "if exists " );

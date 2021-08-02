@@ -51,7 +51,8 @@ public class NullablePrimaryKeyTest extends BaseUnitTestCase {
 			ms.addAnnotatedClass(Person.class);
 
 			final Metadata metadata = ms.buildMetadata();
-			final List<String> commands = new SchemaCreatorImpl( serviceRegistry ).generateCreationCommands( metadata, false );
+			final List<String> commands = new SchemaCreatorImpl( serviceRegistry )
+					.generateCreationCommands( metadata.forSchemaTool(), false );
 			for (String s : commands) {
                 log.debug( s );
 			}

@@ -44,7 +44,7 @@ public class IndexesCreationTest extends BaseUnitTestCase {
 	@Test
 	public void testTheIndexIsGenerated() {
 		final List<String> commands = new SchemaCreatorImpl( ssr ).generateCreationCommands(
-				metadata,
+				metadata.forSchemaTool(),
 				false
 		);
 

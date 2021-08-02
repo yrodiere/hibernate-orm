@@ -6,8 +6,10 @@
  */
 package org.hibernate.dialect.unique;
 
+import org.hibernate.AssertionFailure;
 import org.hibernate.boot.Metadata;
 import org.hibernate.mapping.UniqueKey;
+import org.hibernate.tool.schema.spi.SchemaActionMetadata;
 
 /**
  * Dialect-level delegate in charge of applying "uniqueness" to a column.  Uniqueness can be defined
@@ -67,7 +69,21 @@ public interface UniqueDelegate {
 	 *
 	 * @return The ALTER TABLE command
 	 */
-	public String getAlterTableToAddUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata);
+	default String getAlterTableToAddUniqueKeyCommand(UniqueKey uniqueKey, SchemaActionMetadata metadata) {
+		return getAlterTableToAddUniqueKeyCommand( uniqueKey, metadata.getFullMetadataOrFail() );
+	}
+
+	/**
+	 * Get the SQL ALTER TABLE command to be used to create the given UniqueKey.
+	 *
+	 * @param uniqueKey The UniqueKey instance.  Contains all information about the columns
+	 * @param metadata Access to the bootstrap mapping information
+	 *
+	 * @return The ALTER TABLE command
+	 */
+	default String getAlterTableToAddUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata) {
+		throw new AssertionFailure( "getAlterTableToAddUniqueKeyCommand(UniqueKey, SchemaActionMetadata) is not implemented as required" );
+	}
 
 	/**
 	 * Get the SQL ALTER TABLE command to be used to drop the given UniqueKey.
@@ -77,6 +93,20 @@ public interface UniqueDelegate {
 	 *
 	 * @return The ALTER TABLE command
 	 */
-	public String getAlterTableToDropUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata);
+	default String getAlterTableToDropUniqueKeyCommand(UniqueKey uniqueKey, SchemaActionMetadata metadata) {
+		return getAlterTableToDropUniqueKeyCommand( uniqueKey, metadata.getFullMetadataOrFail() );
+	}
+
+	/**
+	 * Get the SQL ALTER TABLE command to be used to drop the given UniqueKey.
+	 *
+	 * @param uniqueKey The UniqueKey instance.  Contains all information about the columns
+	 * @param metadata Access to the bootstrap mapping information
+	 *
+	 * @return The ALTER TABLE command
+	 */
+	default String getAlterTableToDropUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata) {
+		throw new AssertionFailure( "getAlterTableToDropUniqueKeyCommand(UniqueKey, SchemaActionMetadata) is not implemented as required" );
+	}
 
 }

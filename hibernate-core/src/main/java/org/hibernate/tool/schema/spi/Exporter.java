@@ -7,6 +7,7 @@
 package org.hibernate.tool.schema.spi;
 
 
+import org.hibernate.AssertionFailure;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.model.relational.Exportable;
 
@@ -24,14 +25,48 @@ public interface Exporter<T extends Exportable> {
 	/**
 	 * Get the commands needed for creation.
 	 *
+	 * @param exportable An object to export.
+	 * @param metadata The relevant Hibernate ORM metadata.
 	 * @return The commands needed for creation scripting.
 	 */
-	String[] getSqlCreateStrings(T exportable, Metadata metadata);
+	// Default implementation for backwards compatibility only.
+	@SuppressWarnings("deprecation")
+	default String[] getSqlCreateStrings(T exportable, SchemaActionMetadata metadata) {
+		return getSqlCreateStrings( exportable, metadata.getFullMetadataOrFail() );
+	}
+
+	/**
+	 * Get the commands needed for creation.
+	 *
+	 * @return The commands needed for creation scripting.
+	 * @deprecated Implement {@link #getSqlCreateStrings(Exportable, SchemaActionMetadata)} instead.
+	 */
+	@Deprecated
+	default String[] getSqlCreateStrings(T exportable, Metadata metadata) {
+		throw new AssertionFailure( "getSqlCreateStrings(Object, SchemaActionMetadata) is not implemented as required" );
+	}
+
+	/**
+	 * Get the commands needed for dropping.
+	 *
+	 * @param exportable An object to export.
+	 * @param metadata The relevant Hibernate ORM metadata.
+	 * @return The commands needed for drop scripting.
+	 */
+	// Default implementation for backwards compatibility only.
+	@SuppressWarnings("deprecation")
+	default String[] getSqlDropStrings(T exportable, SchemaActionMetadata metadata) {
+		return getSqlDropStrings( exportable, metadata.getFullMetadataOrFail() );
+	}
 
 	/**
 	 * Get the commands needed for dropping.
 	 *
 	 * @return The commands needed for drop scripting.
+	 * @deprecated Implement {@link #getSqlDropStrings(Exportable, SchemaActionMetadata)} instead.
 	 */
-	String[] getSqlDropStrings(T exportable, Metadata metadata);
+	@Deprecated
+	default String[] getSqlDropStrings(T exportable, Metadata metadata) {
+		throw new AssertionFailure( "getSqlDropStrings(Object, SchemaActionMetadata) is not implemented as required" );
+	}
 }

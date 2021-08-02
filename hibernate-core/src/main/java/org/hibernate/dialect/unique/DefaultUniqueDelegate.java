@@ -12,6 +12,7 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.mapping.UniqueKey;
+import org.hibernate.tool.schema.spi.SchemaActionMetadata;
 
 /**
  * The default UniqueDelegate implementation for most dialects.  Uses
@@ -43,8 +44,15 @@ public class DefaultUniqueDelegate implements UniqueDelegate {
 		return "";
 	}
 
+	// For the benefit of extending classes calling super.thismethod()
 	@Override
+	@Deprecated
 	public String getAlterTableToAddUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata) {
+		return getAlterTableToAddUniqueKeyCommand( uniqueKey, metadata.forSchemaTool() );
+	}
+
+	@Override
+	public String getAlterTableToAddUniqueKeyCommand(UniqueKey uniqueKey, SchemaActionMetadata metadata) {
 		final JdbcEnvironment jdbcEnvironment = metadata.getDatabase().getJdbcEnvironment();
 
 		final String tableName = jdbcEnvironment.getQualifiedObjectNameFormatter().format(
@@ -75,8 +83,15 @@ public class DefaultUniqueDelegate implements UniqueDelegate {
 		return sb.append( ')' ).toString();
 	}
 
+	// For the benefit of extending classes calling super.thismethod()
 	@Override
+	@Deprecated
 	public String getAlterTableToDropUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata) {
+		return getAlterTableToAddUniqueKeyCommand( uniqueKey, metadata.forSchemaTool() );
+	}
+
+	@Override
+	public String getAlterTableToDropUniqueKeyCommand(UniqueKey uniqueKey, SchemaActionMetadata metadata) {
 		final JdbcEnvironment jdbcEnvironment = metadata.getDatabase().getJdbcEnvironment();
 
 		final String tableName = jdbcEnvironment.getQualifiedObjectNameFormatter().format(

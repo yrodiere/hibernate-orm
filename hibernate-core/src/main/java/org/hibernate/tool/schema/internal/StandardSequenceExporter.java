@@ -6,11 +6,11 @@
  */
 package org.hibernate.tool.schema.internal;
 
-import org.hibernate.boot.Metadata;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.tool.schema.spi.Exporter;
+import org.hibernate.tool.schema.spi.SchemaActionMetadata;
 
 /**
  * @author Steve Ebersole
@@ -23,7 +23,7 @@ public class StandardSequenceExporter implements Exporter<Sequence> {
 	}
 
 	@Override
-	public String[] getSqlCreateStrings(Sequence sequence, Metadata metadata) {
+	public String[] getSqlCreateStrings(Sequence sequence, SchemaActionMetadata metadata) {
 		final JdbcEnvironment jdbcEnvironment = metadata.getDatabase().getJdbcEnvironment();
 		return dialect.getCreateSequenceStrings(
 				jdbcEnvironment.getQualifiedObjectNameFormatter().format(
@@ -36,7 +36,7 @@ public class StandardSequenceExporter implements Exporter<Sequence> {
 	}
 
 	@Override
-	public String[] getSqlDropStrings(Sequence sequence, Metadata metadata) {
+	public String[] getSqlDropStrings(Sequence sequence, SchemaActionMetadata metadata) {
 		final JdbcEnvironment jdbcEnvironment = metadata.getDatabase().getJdbcEnvironment();
 		return dialect.getDropSequenceStrings(
 				jdbcEnvironment.getQualifiedObjectNameFormatter().format(

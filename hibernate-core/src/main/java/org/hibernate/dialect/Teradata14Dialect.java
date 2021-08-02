@@ -15,7 +15,6 @@ import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.LockOptions;
-import org.hibernate.boot.Metadata;
 import org.hibernate.boot.model.relational.QualifiedNameImpl;
 import org.hibernate.cfg.Environment;
 import org.hibernate.dialect.function.SQLFunctionTemplate;
@@ -30,6 +29,7 @@ import org.hibernate.mapping.Index;
 import org.hibernate.sql.ForUpdateFragment;
 import org.hibernate.tool.schema.internal.StandardIndexExporter;
 import org.hibernate.tool.schema.spi.Exporter;
+import org.hibernate.tool.schema.spi.SchemaActionMetadata;
 import org.hibernate.type.StandardBasicTypes;
 
 /**
@@ -214,7 +214,7 @@ public class Teradata14Dialect extends TeradataDialect {
 		}
 
 		@Override
-		public String[] getSqlCreateStrings(Index index, Metadata metadata) {
+		public String[] getSqlCreateStrings(Index index, SchemaActionMetadata metadata) {
 			final JdbcEnvironment jdbcEnvironment = metadata.getDatabase().getJdbcEnvironment();
 			final String tableName = jdbcEnvironment.getQualifiedObjectNameFormatter().format(
 					index.getTable().getQualifiedTableName(),

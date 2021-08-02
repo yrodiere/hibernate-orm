@@ -165,7 +165,7 @@ public class IndividuallySchemaValidatorImplTest extends BaseUnitTestCase {
 
 		try {
 			new SchemaCreatorImpl( ssr ).doCreation(
-					metadata,
+					metadata.forSchemaTool(),
 					serviceRegistry,
 					settings,
 					true,
@@ -187,7 +187,7 @@ public class IndividuallySchemaValidatorImplTest extends BaseUnitTestCase {
 			}
 		}
 		finally {
-			new SchemaDropperImpl( serviceRegistry ).doDrop( metadata, false, schemaGenerator );
+			new SchemaDropperImpl( serviceRegistry ).doDrop( metadata.forSchemaTool(), false, schemaGenerator );
 			serviceRegistry.destroy();
 			connectionProvider.stop();
 		}
@@ -220,7 +220,7 @@ public class IndividuallySchemaValidatorImplTest extends BaseUnitTestCase {
 
 		try {
 			new SchemaCreatorImpl( ssr ).doCreation(
-					metadata,
+					metadata.forSchemaTool(),
 					serviceRegistry,
 					settings,
 					true,
@@ -242,7 +242,7 @@ public class IndividuallySchemaValidatorImplTest extends BaseUnitTestCase {
 			}
 		}
 		finally {
-			new SchemaDropperImpl( serviceRegistry ).doDrop( metadata, false, schemaGenerator );
+			new SchemaDropperImpl( serviceRegistry ).doDrop( metadata.forSchemaTool(), false, schemaGenerator );
 			serviceRegistry.destroy();
 			connectionProvider.stop();
 		}

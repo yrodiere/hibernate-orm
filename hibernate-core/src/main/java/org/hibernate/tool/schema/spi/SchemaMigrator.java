@@ -23,5 +23,18 @@ public interface SchemaMigrator {
 	 * @param options Options for executing the alteration
 	 * @param targetDescriptor description of the target(s) for the alteration commands
 	 */
-	void doMigration(Metadata metadata, ExecutionOptions options, TargetDescriptor targetDescriptor);
+	void doMigration(SchemaActionMetadata metadata, ExecutionOptions options, TargetDescriptor targetDescriptor);
+
+	/**
+	 * Perform a schema migration (alteration) from the indicated source(s) to the indicated target(s).
+	 *
+	 * @param metadata Represents the schema to be altered.
+	 * @param options Options for executing the alteration
+	 * @param targetDescriptor description of the target(s) for the alteration commands
+	 * @deprecated Use {@link #doMigration(SchemaActionMetadata, ExecutionOptions, TargetDescriptor)} instead.
+	 */
+	@Deprecated
+	default void doMigration(Metadata metadata, ExecutionOptions options, TargetDescriptor targetDescriptor) {
+		doMigration( metadata.forSchemaToolLegacy(), options, targetDescriptor );
+	}
 }

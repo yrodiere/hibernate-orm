@@ -172,13 +172,13 @@ public class SequenceFilterTest extends BaseUnitTestCase {
 
 	private RecordingTarget doCreation(SchemaFilter filter) {
 		RecordingTarget target = new RecordingTarget();
-		new SchemaCreatorImpl( serviceRegistry, filter ).doCreation( metadata, true, target );
+		new SchemaCreatorImpl( serviceRegistry, filter ).doCreation( metadata.forSchemaTool(), true, target );
 		return target;
 	}
 
 	private RecordingTarget doDrop(SchemaFilter filter) {
 		RecordingTarget target = new RecordingTarget();
-		new SchemaDropperImpl( serviceRegistry, filter ).doDrop( metadata, true, target );
+		new SchemaDropperImpl( serviceRegistry, filter ).doDrop( metadata.forSchemaTool(), true, target );
 		return target;
 	}
 

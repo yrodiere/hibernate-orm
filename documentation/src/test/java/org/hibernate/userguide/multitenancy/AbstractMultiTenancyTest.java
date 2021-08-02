@@ -161,7 +161,7 @@ public abstract class AbstractMultiTenancyTest extends BaseUnitTestCase {
         );
 
         new SchemaDropperImpl( serviceRegistry ).doDrop(
-                metadata,
+                metadata.forSchemaTool(),
                 serviceRegistry,
                 settings,
                 true,
@@ -170,7 +170,7 @@ public abstract class AbstractMultiTenancyTest extends BaseUnitTestCase {
         );
 
         new SchemaCreatorImpl( serviceRegistry ).doCreation(
-                metadata,
+                metadata.forSchemaTool(),
                 serviceRegistry,
                 settings,
                 true,

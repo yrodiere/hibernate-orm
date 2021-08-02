@@ -156,7 +156,7 @@ public class IndividuallySchemaValidatorImplConnectionTest extends BaseUnitTestC
 
 		try {
 			new SchemaCreatorImpl( ssr ).doCreation(
-					metadata,
+					metadata.forSchemaTool(),
 					serviceRegistry,
 					settings,
 					true,
@@ -175,7 +175,7 @@ public class IndividuallySchemaValidatorImplConnectionTest extends BaseUnitTestC
 			assertFalse( connection.getAutoCommit() );
 		}
 		finally {
-			new SchemaDropperImpl( serviceRegistry ).doDrop( metadata, false, schemaGenerator );
+			new SchemaDropperImpl( serviceRegistry ).doDrop( metadata.forSchemaTool(), false, schemaGenerator );
 			serviceRegistry.destroy();
 			connectionProvider.stop();
 		}

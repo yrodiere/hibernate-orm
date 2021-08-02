@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.boot.Metadata;
@@ -20,6 +21,7 @@ import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.engine.spi.Mapping;
 import org.hibernate.internal.util.StringHelper;
+import org.hibernate.tool.schema.spi.SchemaActionMetadata;
 
 /**
  * A relational table index
@@ -128,6 +130,10 @@ public class Index implements RelationalModel, Exportable, Serializable {
 		);
 	}
 
+	/**
+	 * @deprecated Use {@link #buildSqlCreateIndexString(Dialect, String, Table, Iterator, Map, boolean, SchemaActionMetadata)} instead.
+	 */
+	@Deprecated
 	public static String buildSqlCreateIndexString(
 			Dialect dialect,
 			String name,
@@ -136,6 +142,18 @@ public class Index implements RelationalModel, Exportable, Serializable {
 			java.util.Map<Column, String> columnOrderMap,
 			boolean unique,
 			Metadata metadata) {
+		return buildSqlCreateIndexString( dialect, name, table, columns, columnOrderMap, unique,
+				metadata.forSchemaTool() );
+	}
+
+	public static String buildSqlCreateIndexString(
+			Dialect dialect,
+			String name,
+			Table table,
+			Iterator<Column> columns,
+			java.util.Map<Column, String> columnOrderMap,
+			boolean unique,
+			SchemaActionMetadata metadata) {
 		final JdbcEnvironment jdbcEnvironment = metadata.getDatabase().getJdbcEnvironment();
 
 		final String tableName = jdbcEnvironment.getQualifiedObjectNameFormatter().format(

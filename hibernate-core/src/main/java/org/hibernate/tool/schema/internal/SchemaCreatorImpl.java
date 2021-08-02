@@ -50,6 +50,7 @@ import org.hibernate.tool.schema.internal.exec.ScriptSourceInputNonExistentImpl;
 import org.hibernate.tool.schema.spi.CommandAcceptanceException;
 import org.hibernate.tool.schema.spi.ExceptionHandler;
 import org.hibernate.tool.schema.spi.ExecutionOptions;
+import org.hibernate.tool.schema.spi.SchemaActionMetadata;
 import org.hibernate.tool.schema.spi.SchemaCreator;
 import org.hibernate.tool.schema.spi.SchemaFilter;
 import org.hibernate.tool.schema.spi.SchemaManagementException;
@@ -103,7 +104,7 @@ public class SchemaCreatorImpl implements SchemaCreator {
 
 	@Override
 	public void doCreation(
-			Metadata metadata,
+			SchemaActionMetadata metadata,
 			ExecutionOptions options,
 			SourceDescriptor sourceDescriptor,
 			TargetDescriptor targetDescriptor) {
@@ -123,7 +124,7 @@ public class SchemaCreatorImpl implements SchemaCreator {
 	}
 
 	public void doCreation(
-			Metadata metadata,
+			SchemaActionMetadata metadata,
 			Dialect dialect,
 			ExecutionOptions options,
 			SourceDescriptor sourceDescriptor,
@@ -148,7 +149,7 @@ public class SchemaCreatorImpl implements SchemaCreator {
 	}
 
 	private void performCreation(
-			Metadata metadata,
+			SchemaActionMetadata metadata,
 			Dialect dialect,
 			ExecutionOptions options,
 			SourceDescriptor sourceDescriptor,
@@ -199,7 +200,7 @@ public class SchemaCreatorImpl implements SchemaCreator {
 	}
 
 	public void createFromMetadata(
-			Metadata metadata,
+			SchemaActionMetadata metadata,
 			ExecutionOptions options,
 			Dialect dialect,
 			Formatter formatter,
@@ -527,7 +528,7 @@ public class SchemaCreatorImpl implements SchemaCreator {
 	 *
 	 * @return The generation commands
 	 */
-	public List<String> generateCreationCommands(Metadata metadata, final boolean manageNamespaces) {
+	public List<String> generateCreationCommands(SchemaActionMetadata metadata, final boolean manageNamespaces) {
 		final JournalingGenerationTarget target = new JournalingGenerationTarget();
 
 		final ServiceRegistry serviceRegistry = ( (MetadataImplementor) metadata ).getMetadataBuildingOptions()
@@ -556,9 +557,8 @@ public class SchemaCreatorImpl implements SchemaCreator {
 		return target.commands;
 	}
 
-
 	public void doCreation(
-			Metadata metadata,
+			SchemaActionMetadata metadata,
 			final boolean manageNamespaces,
 			GenerationTarget... targets) {
 		final ServiceRegistry serviceRegistry = ( (MetadataImplementor) metadata ).getMetadataBuildingOptions().getServiceRegistry();
@@ -572,7 +572,7 @@ public class SchemaCreatorImpl implements SchemaCreator {
 	}
 
 	public void doCreation(
-			Metadata metadata,
+			SchemaActionMetadata metadata,
 			final ServiceRegistry serviceRegistry,
 			final Map settings,
 			final boolean manageNamespaces,

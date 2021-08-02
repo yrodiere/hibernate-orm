@@ -54,7 +54,7 @@ public class IndexTest extends BaseUnitTestCase {
 				.buildMetadata();
 
 		final JournalingSchemaToolingTarget target = new JournalingSchemaToolingTarget();
-		new SchemaCreatorImpl( ssr ).doCreation( metadata, false, target );
+		new SchemaCreatorImpl( ssr ).doCreation( metadata.forSchemaTool(), false, target );
 
 		assertTrue(
 				"Expected index [" + expectedIndexName + "] not seen in schema creation output",
