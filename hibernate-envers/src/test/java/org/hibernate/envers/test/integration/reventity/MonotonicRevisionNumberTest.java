@@ -6,6 +6,13 @@
  */
 package org.hibernate.envers.test.integration.reventity;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Optional;
+import java.util.stream.StreamSupport;
+
+import org.hibernate.boot.model.relational.Database;
+import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.dialect.Oracle8iDialect;
 import org.hibernate.envers.enhanced.OrderedSequenceGenerator;
 import org.hibernate.envers.enhanced.SequenceIdRevisionEntity;
@@ -13,6 +20,7 @@ import org.hibernate.envers.test.BaseEnversFunctionalTestCase;
 import org.hibernate.envers.test.entities.StrIntTestEntity;
 import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.persister.entity.EntityPersister;
+import org.hibernate.tool.schema.internal.StandardSequenceExporter;
 
 import org.hibernate.testing.RequiresDialect;
 import org.hibernate.testing.TestForIssue;
@@ -35,10 +43,18 @@ public class MonotonicRevisionNumberTest extends BaseEnversFunctionalTestCase {
 		EntityPersister persister = sessionFactory().getEntityPersister( SequenceIdRevisionEntity.class.getName() );
 		IdentifierGenerator generator = persister.getIdentifierGenerator();
 		Assert.assertTrue( OrderedSequenceGenerator.class.isInstance( generator ) );
-		OrderedSequenceGenerator seqGenerator = (OrderedSequenceGenerator) generator;
+
+		Database database = metadata().getDatabase();
+		Optional<Sequence> sequenceOptional = StreamSupport.stream(
+						database.getDefaultNamespace().getSequences().spliterator(), false )
+				.filter( s -> "REVISION_GENERATOR".equals( s.getName().getSequenceName().getText() ) )
+				.findFirst();
+		assertThat( sequenceOptional ).isPresent();
+		String[] sqlCreateStrings = new StandardSequenceExporter( database.getDialect() )
+				.getSqlCreateStrings( sequenceOptional.get(), metadata() );
 		Assert.assertTrue(
 				"Oracle sequence needs to be ordered in RAC environment.",
-				seqGenerator.sqlCreateStrings( getDialect() )[0].toLowerCase().endsWith( " order" )
+				sqlCreateStrings[0].toLowerCase().endsWith( " order" )
 		);
 	}
 }
