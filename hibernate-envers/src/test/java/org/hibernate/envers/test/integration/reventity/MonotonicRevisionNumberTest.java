@@ -13,6 +13,8 @@ import java.util.stream.StreamSupport;
 
 import org.hibernate.boot.model.relational.Database;
 import org.hibernate.boot.model.relational.Sequence;
+import org.hibernate.boot.model.relational.SqlStringGenerationContext;
+import org.hibernate.boot.model.relational.internal.SqlStringGenerationContextImpl;
 import org.hibernate.dialect.Oracle8iDialect;
 import org.hibernate.envers.enhanced.OrderedSequenceGenerator;
 import org.hibernate.envers.enhanced.SequenceIdRevisionEntity;
@@ -45,13 +47,15 @@ public class MonotonicRevisionNumberTest extends BaseEnversFunctionalTestCase {
 		Assert.assertTrue( OrderedSequenceGenerator.class.isInstance( generator ) );
 
 		Database database = metadata().getDatabase();
+		SqlStringGenerationContext sqlStringGenerationContext =
+				SqlStringGenerationContextImpl.forTests( database.getJdbcEnvironment() );
 		Optional<Sequence> sequenceOptional = StreamSupport.stream(
 						database.getDefaultNamespace().getSequences().spliterator(), false )
 				.filter( s -> "REVISION_GENERATOR".equals( s.getName().getSequenceName().getText() ) )
 				.findFirst();
 		assertThat( sequenceOptional ).isPresent();
 		String[] sqlCreateStrings = new StandardSequenceExporter( database.getDialect() )
-				.getSqlCreateStrings( sequenceOptional.get(), metadata() );
+				.getSqlCreateStrings( sequenceOptional.get(), metadata(), sqlStringGenerationContext );
 		Assert.assertTrue(
 				"Oracle sequence needs to be ordered in RAC environment.",
 				sqlCreateStrings[0].toLowerCase().endsWith( " order" )
