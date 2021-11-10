@@ -46,7 +46,7 @@ public class SqlStringGenerationContextImpl
 	 */
 	public static SqlStringGenerationContext fromExplicit(JdbcEnvironment jdbcEnvironment,
 			Database database, String defaultCatalog, String defaultSchema) {
-		Namespace.Name implicitNamespaceName = database.getDefaultNamespace().getPhysicalName();
+		Namespace.Name implicitNamespaceName = database.getPhysicalImplicitNamespaceName();
 		IdentifierHelper identifierHelper = jdbcEnvironment.getIdentifierHelper();
 		Identifier actualDefaultCatalog = implicitNamespaceName.getCatalog() != null
 				? implicitNamespaceName.getCatalog()
