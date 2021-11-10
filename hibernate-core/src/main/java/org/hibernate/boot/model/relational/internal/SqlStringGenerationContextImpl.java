@@ -40,20 +40,22 @@ public class SqlStringGenerationContextImpl
 	/**
 	 * @param jdbcEnvironment The JDBC environment, to extract the dialect, identifier helper, etc.
 	 * @param database The database metadata, to retrieve the implicit namespace name configured through XML mapping.
-	 * @param defaultCatalog The default catalog to use, unless an implicit catalog was configured through XML mapping.
-	 * @param defaultSchema The default schema to use, unless an implicit schema was configured through XML mapping.
+	 * @param defaultCatalog The default catalog to use; if {@code null}, will use the implicit catalog that was configured through XML mapping.
+	 * @param defaultSchema The default schema to use; if {@code null}, will use the implicit schema that was configured through XML mapping.
 	 * @return An {@link SqlStringGenerationContext}.
 	 */
 	public static SqlStringGenerationContext fromExplicit(JdbcEnvironment jdbcEnvironment,
 			Database database, String defaultCatalog, String defaultSchema) {
 		Namespace.Name implicitNamespaceName = database.getPhysicalImplicitNamespaceName();
 		IdentifierHelper identifierHelper = jdbcEnvironment.getIdentifierHelper();
-		Identifier actualDefaultCatalog = implicitNamespaceName.getCatalog() != null
-				? implicitNamespaceName.getCatalog()
-				: identifierHelper.toIdentifier( defaultCatalog );
-		Identifier actualDefaultSchema = implicitNamespaceName.getSchema() != null
-				? implicitNamespaceName.getSchema()
-				: identifierHelper.toIdentifier( defaultSchema );
+		Identifier actualDefaultCatalog = identifierHelper.toIdentifier( defaultCatalog );
+		if ( actualDefaultCatalog == null ) {
+			actualDefaultCatalog = implicitNamespaceName.getCatalog();
+		}
+		Identifier actualDefaultSchema = identifierHelper.toIdentifier( defaultSchema );
+		if ( defaultSchema == null ) {
+			actualDefaultSchema = implicitNamespaceName.getSchema();
+		}
 		return new SqlStringGenerationContextImpl( jdbcEnvironment, actualDefaultCatalog, actualDefaultSchema );
 	}
 
