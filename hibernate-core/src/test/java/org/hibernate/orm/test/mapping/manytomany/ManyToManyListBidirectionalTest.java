@@ -18,6 +18,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OrderColumn;
 
 import org.junit.Test;
 
@@ -90,6 +91,7 @@ public class ManyToManyListBidirectionalTest extends BaseCoreFunctionalTestCase 
 		@JoinTable(name = "book_author",
 				joinColumns = { @JoinColumn(name = "fk_book") },
 				inverseJoinColumns = { @JoinColumn(name = "fk_author") })
+		@OrderColumn
 		private List<Author> authors = new ArrayList<>();
 
 		public void addAuthor(Author author) {
@@ -112,6 +114,7 @@ public class ManyToManyListBidirectionalTest extends BaseCoreFunctionalTestCase 
 		}
 
 		@ManyToMany(mappedBy = "authors")
+		@OrderColumn
 		private List<Book> books = new ArrayList<>();
 
 		public void addBook(Book book) {
