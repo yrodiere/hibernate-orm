@@ -4,7 +4,6 @@
  */
 package org.hibernate.loader.ast.internal;
 
-import java.lang.reflect.Array;
 import java.util.List;
 
 import org.hibernate.Hibernate;
@@ -21,7 +20,6 @@ import org.hibernate.engine.spi.SubselectFetch;
 import org.hibernate.event.monitor.spi.EventMonitor;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.event.monitor.spi.DiagnosticEvent;
-import org.hibernate.internal.build.AllowReflection;
 import org.hibernate.loader.LoaderLogging;
 import org.hibernate.metamodel.mapping.BasicValuedModelPart;
 import org.hibernate.metamodel.mapping.EntityMappingType;
@@ -184,7 +182,7 @@ public class LoaderHelper {
 			return keys;
 		}
 
-		final K[] typedArray = createTypedArray( keyClass, keys.length );
+		final K[] typedArray = keyJavaType.createTypedArray( keys.length );
 		final boolean coerce = !sessionFactory.getJpaMetamodel().getJpaCompliance().isLoadByIdComplianceEnabled();
 		if ( !coerce ) {
 			System.arraycopy( keys, 0, typedArray, 0, keys.length );
@@ -195,18 +193,6 @@ public class LoaderHelper {
 			}
 		}
 		return typedArray;
-	}
-
-	/**
-	 * Creates a typed array, as opposed to a generic {@code Object[]} that holds the typed values
-	 *
-	 * @param elementClass The type of the array elements.  See {@link Class#getComponentType()}
-	 * @param length The length to which the array should be created.  This is usually zero for Hibernate uses
-	 */
-	@AllowReflection
-	public static <X> X[] createTypedArray(Class<X> elementClass, @SuppressWarnings("SameParameterValue") int length) {
-		//noinspection unchecked
-		return (X[]) Array.newInstance( elementClass, length );
 	}
 
 	/**

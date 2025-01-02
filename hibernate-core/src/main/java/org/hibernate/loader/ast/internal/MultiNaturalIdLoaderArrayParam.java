@@ -25,6 +25,7 @@ import org.hibernate.sql.exec.spi.JdbcOperationQuerySelect;
 import org.hibernate.sql.exec.spi.JdbcParameterBindings;
 import org.hibernate.type.BasicType;
 import org.hibernate.type.BasicTypeRegistry;
+import org.hibernate.type.descriptor.java.JavaType;
 
 /**
  * Standard MultiNaturalIdLoader implementation
@@ -38,8 +39,9 @@ public class MultiNaturalIdLoaderArrayParam<E> implements MultiNaturalIdLoader<E
 
 		this.entityDescriptor = entityDescriptor;
 
-		final Class<?> keyClass = entityDescriptor.getNaturalIdMapping().getJavaType().getJavaTypeClass();
-		this.keyArrayClass = LoaderHelper.createTypedArray( keyClass, 0 ).getClass();
+		final JavaType<?> keyJavaType = entityDescriptor.getNaturalIdMapping().getJavaType();
+		this.keyArrayClass = keyJavaType.createTypedArray( 0 ).getClass();
+
 	}
 
 	@Override
