@@ -18,6 +18,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import org.hibernate.Internal;
+import org.hibernate.internal.build.AllowReflection;
 import org.hibernate.internal.util.CharSequenceHelper;
 import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.metamodel.mapping.EmbeddableMappingType;
@@ -1613,6 +1614,7 @@ public class JsonHelper {
 		}
 
 		@Override
+		@AllowReflection // We need the ability to create arrays of requested types dynamically.
 		public <T> T[] toArray(T[] a) {
 			//noinspection unchecked
 			final T[] r = a.length >= size
