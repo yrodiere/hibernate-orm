@@ -300,7 +300,7 @@ public abstract class AbstractMultiIdEntityLoader<T> implements MultiIdEntityLoa
 		}
 		else {
 			// we need to load only some the ids
-			return unresolvedIds.toArray( idType.createTypedArray( unresolvedIds.size() ) );
+			return unresolvedIds.toArray( idType.newArray( unresolvedIds.size() ) );
 		}
 	}
 

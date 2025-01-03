@@ -11,7 +11,6 @@ import org.hibernate.engine.spi.LoadQueryInfluencers;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.engine.spi.SubselectFetch;
-import org.hibernate.internal.build.AllowReflection;
 import org.hibernate.loader.ast.spi.CollectionBatchLoader;
 import org.hibernate.loader.ast.spi.SqlArrayMultiKeyLoader;
 import org.hibernate.metamodel.mapping.ForeignKeyDescriptor;
@@ -66,7 +65,7 @@ public class CollectionBatchLoaderArrayParam
 
 		final ForeignKeyDescriptor keyDescriptor = getLoadable().getKeyDescriptor();
 		final JdbcMapping jdbcMapping = keyDescriptor.getSingleJdbcMapping();
-		final Class<? extends Object[]> jdbcArrayClass = jdbcMapping.getJdbcJavaType().getArrayType();
+		final Class<? extends Object[]> jdbcArrayClass = jdbcMapping.getJdbcJavaType().getArrayClass();
 
 		final BasicType<?> arrayBasicType = getSessionFactory().getTypeConfiguration()
 				.getBasicTypeRegistry()
@@ -126,8 +125,8 @@ public class CollectionBatchLoaderArrayParam
 		final Object[] keysToInitialize = jdbcParameter.getExpressionType()
 				.getSingleJdbcMapping()
 				.getJdbcJavaType()
-				.createTypedArray( length );
-		final Object[] embeddedKeys = keyDescriptor.getJavaType().createTypedArray( length );
+				.newArray( length );
+		final Object[] embeddedKeys = keyDescriptor.getJavaType().newArray( length );
 		session.getPersistenceContextInternal().getBatchFetchQueue()
 				.collectBatchLoadableCollectionKeys(
 						length,
@@ -213,7 +212,7 @@ public class CollectionBatchLoaderArrayParam
 		if( keyDescriptor.isEmbedded()){
 			assert keyDescriptor.getJdbcTypeCount() == 1;
 			final int length = getDomainBatchSize();
-			final Object[] keysToInitialize = keyDescriptor.getJavaType().createTypedArray( length );
+			final Object[] keysToInitialize = keyDescriptor.getJavaType().newArray( length );
 			session.getPersistenceContextInternal().getBatchFetchQueue()
 					.collectBatchLoadableCollectionKeys(
 							length,

@@ -49,7 +49,7 @@ public class MultiIdEntityLoaderArrayParam<E> extends AbstractMultiIdEntityLoade
 			EntityMappingType entityDescriptor,
 			SessionFactoryImplementor sessionFactory) {
 		super( entityDescriptor, sessionFactory );
-		final Class<? extends Object[]> idArrayClass = idType.getArrayType();
+		final Class<? extends Object[]> idArrayClass = idType.getArrayClass();
 		arrayJdbcMapping = resolveArrayJdbcMapping(
 				getSessionFactory().getTypeConfiguration().getBasicTypeRegistry().getRegisteredType( idArrayClass ),
 				getIdentifierMapping().getJdbcMapping(),
@@ -119,7 +119,7 @@ public class MultiIdEntityLoaderArrayParam<E> extends AbstractMultiIdEntityLoade
 		final JdbcParameterBindings jdbcParameterBindings = new JdbcParameterBindingsImpl(1);
 		// Parameter
 		//noinspection SuspiciousToArrayCall
-		Object[] idsInBatchArray = idsInBatch.toArray( idType.createTypedArray( idsInBatch.size() ) );
+		Object[] idsInBatchArray = idsInBatch.toArray( idType.newArray( idsInBatch.size() ) );
 		jdbcParameterBindings.addBinding( jdbcParameter,
 				new JdbcParameterBindingImpl( arrayJdbcMapping, idsInBatchArray ) );
 

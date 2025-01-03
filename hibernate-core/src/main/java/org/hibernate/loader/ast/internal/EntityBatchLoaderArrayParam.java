@@ -75,7 +75,7 @@ public class EntityBatchLoaderArrayParam<T>
 		}
 
 		identifierMapping = (BasicEntityIdentifierMapping) getLoadable().getIdentifierMapping();
-		final Class<? extends Object[]> arrayClass = identifierMapping.getJavaType().getArrayType();
+		final Class<? extends Object[]> arrayClass = identifierMapping.getJavaType().getArrayClass();
 
 		arrayJdbcMapping = MultiKeyLoadHelper.resolveArrayJdbcMapping(
 				sessionFactory.getTypeConfiguration().getBasicTypeRegistry().getRegisteredType( arrayClass ),
@@ -109,7 +109,7 @@ public class EntityBatchLoaderArrayParam<T>
 	protected Object[] resolveIdsToInitialize(Object pkValue, SharedSessionContractImplementor session) {
 		//TODO: should this really be different to EntityBatchLoaderInPredicate impl?
 		final JavaType<?> idJavaType = identifierMapping.getJavaType();
-		final Object[] idsToLoad = idJavaType.createTypedArray( domainBatchSize );
+		final Object[] idsToLoad = idJavaType.newArray( domainBatchSize );
 		session.getPersistenceContextInternal().getBatchFetchQueue()
 				.collectBatchLoadableEntityIds(
 						domainBatchSize,

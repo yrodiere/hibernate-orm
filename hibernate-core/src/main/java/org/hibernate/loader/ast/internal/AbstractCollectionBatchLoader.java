@@ -128,7 +128,7 @@ public abstract class AbstractCollectionBatchLoader implements CollectionBatchLo
 	Object[] resolveKeysToInitialize(Object keyBeingLoaded, SharedSessionContractImplementor session) {
 		final int length = getDomainBatchSize();
 		final JavaType<?> keyJavaType = getKeyType( getLoadable().getKeyDescriptor().getKeyPart() );
-		final Object[] keysToInitialize = keyJavaType.createTypedArray( length );
+		final Object[] keysToInitialize = keyJavaType.newArray( length );
 		session.getPersistenceContextInternal().getBatchFetchQueue()
 				.collectBatchLoadableCollectionKeys(
 						length,

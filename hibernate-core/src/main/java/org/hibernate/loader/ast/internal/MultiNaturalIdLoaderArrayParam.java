@@ -40,7 +40,7 @@ public class MultiNaturalIdLoaderArrayParam<E> implements MultiNaturalIdLoader<E
 		this.entityDescriptor = entityDescriptor;
 
 		final JavaType<?> keyJavaType = entityDescriptor.getNaturalIdMapping().getJavaType();
-		this.keyArrayClass = keyJavaType.createTypedArray( 0 ).getClass();
+		this.keyArrayClass = keyJavaType.newArray( 0 ).getClass();
 
 	}
 

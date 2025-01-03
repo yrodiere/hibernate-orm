@@ -182,7 +182,7 @@ public class LoaderHelper {
 			return keys;
 		}
 
-		final K[] typedArray = keyJavaType.createTypedArray( keys.length );
+		final K[] typedArray = keyJavaType.newArray( keys.length );
 		final boolean coerce = !sessionFactory.getJpaMetamodel().getJpaCompliance().isLoadByIdComplianceEnabled();
 		if ( !coerce ) {
 			System.arraycopy( keys, 0, typedArray, 0, keys.length );

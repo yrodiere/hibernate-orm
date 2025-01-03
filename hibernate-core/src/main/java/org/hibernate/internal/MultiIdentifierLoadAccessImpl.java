@@ -190,7 +190,7 @@ class MultiIdentifierLoadAccessImpl<T> implements MultiIdentifierLoadAccess<T>, 
 		}
 		else {
 			return perform( () -> (List<T>) entityPersister.multiLoad(
-					ids.toArray( entityPersister.getIdentifierMapping().getJavaType().createTypedArray( ids.size() ) ),
+					ids.toArray( entityPersister.getIdentifierMapping().getJavaType().newArray( ids.size() ) ),
 					session,
 					this
 			) );
