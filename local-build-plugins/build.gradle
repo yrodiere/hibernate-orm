@@ -30,10 +30,10 @@ dependencies {
 
 	implementation "de.thetaphi:forbiddenapis:3.8"
 
-	implementation "org.apache.maven:maven-embedder:3.9.9"
-	implementation "org.apache.maven:maven-compat:3.9.9"
-	implementation "org.apache.maven.resolver:maven-resolver-connector-basic:1.9.18"
-	implementation "org.apache.maven.resolver:maven-resolver-transport-http:1.9.18"
+	implementation "org.apache.maven:maven-embedder:3.9.10"
+	implementation "org.apache.maven:maven-compat:3.9.10"
+	implementation "org.apache.maven.resolver:maven-resolver-connector-basic:1.9.23"
+	implementation "org.apache.maven.resolver:maven-resolver-transport-http:1.9.23"
 	implementation "org.slf4j:slf4j-simple:1.7.36"
 }
 
