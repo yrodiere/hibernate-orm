@@ -4,6 +4,8 @@
  */
 package org.hibernate.service.spi;
 
+import org.hibernate.internal.util.NullnessUtil;
+
 /**
  * Allows services to be injected with the {@link org.hibernate.service.ServiceRegistry} during configuration phase.
  *
@@ -15,5 +17,6 @@ public interface ServiceRegistryAwareService {
 	 *
 	 * @param serviceRegistry The registry
 	 */
+	@NullnessUtil.Initializer
 	void injectServices(ServiceRegistryImplementor serviceRegistry);
 }

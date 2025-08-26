@@ -7,6 +7,7 @@ package org.hibernate.processor.annotation;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.hibernate.AssertionFailure;
+import org.hibernate.internal.util.NullnessUtil;
 import org.hibernate.metamodel.mapping.ordering.OrderByFragmentTranslator;
 import org.hibernate.metamodel.model.domain.EntityDomainType;
 import org.hibernate.processor.Context;
@@ -474,6 +475,7 @@ public class AnnotationMetaEntity extends AnnotationMeta {
 				.toString();
 	}
 
+	@NullnessUtil.Initializer
 	protected void init() {
 		getContext().logMessage( Diagnostic.Kind.OTHER, "Initializing type '" + getQualifiedName() + "'" );
 
@@ -509,6 +511,7 @@ public class AnnotationMetaEntity extends AnnotationMeta {
 							queryMethods.add( method );
 						}
 					}
+					// castNonNull shouldn't be necessary; see JavaxLangModelLibraryModels
 					else if ( castNonNull( method.getEnclosingElement() ).getKind().isInterface()
 							&& !method.isDefault()
 							&& !method.getModifiers().contains( Modifier.PRIVATE )
