@@ -6,13 +6,17 @@ package org.hibernate.processor.annotation;
 
 import org.hibernate.processor.model.MetaAttribute;
 import org.hibernate.processor.model.Metamodel;
+import org.hibernate.processor.spi.ProcessorCustomizer;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.tools.Diagnostic;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.ServiceLoader;
 
-import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.toList;
 import static org.hibernate.metamodel.mapping.EntityIdentifierMapping.ID_ROLE_NAME;
 import static org.hibernate.processor.util.Constants.ENTITY_MANAGER;
 import static org.hibernate.processor.util.Constants.OBJECTS;
@@ -69,15 +73,38 @@ public abstract class AbstractAnnotatedMethod implements MetaAttribute {
 
 	@Override
 	public List<AnnotationMirror> inheritedAnnotations() {
+		List<AnnotationMirror> result = new ArrayList<>();
+
+		// TODO cache this, it's not reasonable to recompute for every method
+		var inheritedAnnotations = new HashSet<>();
+		var context = new ProcessorCustomizer.Context() {
+			@Override
+			public void addInheritedAnnotations(String... annotations) {
+				Collections.addAll( inheritedAnnotations, annotations );
+			}
+		};
+
+		// TODO remove
+		annotationMetaEntity.getContext().logMessage( Diagnostic.Kind.WARNING, "Processing with customizers");
+		for ( ProcessorCustomizer processorCustomizer : ServiceLoader.load( ProcessorCustomizer.class ) ) {
+			// TODO remove
+			annotationMetaEntity.getContext().logMessage( Diagnostic.Kind.WARNING, "Processing with customizer " + processorCustomizer.getClass().getSimpleName());
+			processorCustomizer.customize( context );
+		}
+		method.getAnnotationMirrors().stream()
+				.filter( annotationMirror -> {
+					return inheritedAnnotations.contains( annotationMirror.getAnnotationType().asElement().toString() );
+				} )
+				.forEach( result::add );
+
 		if ( annotationMetaEntity.isJakartaDataRepository() ) {
-			return method.getAnnotationMirrors().stream()
-					.filter(annotationMirror -> hasAnnotation(annotationMirror.getAnnotationType().asElement(),
-							"jakarta.interceptor.InterceptorBinding"))
-					.collect(toList());
+			method.getAnnotationMirrors().stream()
+					.filter( annotationMirror -> hasAnnotation( annotationMirror.getAnnotationType().asElement(),
+							"jakarta.interceptor.InterceptorBinding" ) )
+					.forEach( result::add );
 		}
-		else {
-			return emptyList();
-		}
+
+		return result;
 	}
 
 	void nullCheck(StringBuilder declaration, String paramName) {
