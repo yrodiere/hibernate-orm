@@ -12,6 +12,16 @@ plugins {
 description = 'Hibernate compile-time tooling'
 
 sourceSets {
+    quarkusPanacheHibernateCommon {
+        java {
+            srcDirs = ['src/quarkusPanacheHibernateCommon/java']
+        }
+        resources {
+            srcDirs = ['src/quarkusPanacheHibernateCommon/resources']
+        }
+        compileClasspath += sourceSets.main.output + sourceSets.test.output
+        runtimeClasspath += sourceSets.main.output + sourceSets.test.output
+    }
 	quarkusOrmPanache {
 		java {
 			srcDirs = ['src/quarkusOrmPanache/java']
@@ -19,8 +29,8 @@ sourceSets {
 		resources {
 			srcDirs sourceSets.main.resources
 		}
-		compileClasspath += sourceSets.main.output + sourceSets.test.output
-		runtimeClasspath += sourceSets.main.output + sourceSets.test.output
+		compileClasspath += sourceSets.main.output + sourceSets.test.output + sourceSets.quarkusPanacheHibernateCommon.output
+		runtimeClasspath += sourceSets.main.output + sourceSets.test.output + sourceSets.quarkusPanacheHibernateCommon.output
 	}
 	quarkusHrPanache {
 		java {
@@ -29,8 +39,8 @@ sourceSets {
 		resources {
 			srcDirs sourceSets.main.resources
 		}
-		compileClasspath += sourceSets.main.output + sourceSets.test.output
-		runtimeClasspath += sourceSets.main.output + sourceSets.test.output
+        compileClasspath += sourceSets.main.output + sourceSets.test.output + sourceSets.quarkusPanacheHibernateCommon.output
+        runtimeClasspath += sourceSets.main.output + sourceSets.test.output + sourceSets.quarkusPanacheHibernateCommon.output
 	}
     jakartaData {
         java {
@@ -66,6 +76,9 @@ dependencies {
 
 // The source set gets a custom configuration which extends the normal test implementation config
 configurations {
+    quarkusPanacheHibernateCommonImplementation.extendsFrom(testImplementation)
+    quarkusPanacheHibernateCommonRuntimeOnly.extendsFrom(testRuntimeOnly)
+    quarkusPanacheHibernateCommonCompileOnly.extendsFrom(testCompileOnly)
 	quarkusOrmPanacheImplementation.extendsFrom(testImplementation)
 	quarkusOrmPanacheRuntimeOnly.extendsFrom(testRuntimeOnly)
 	quarkusOrmPanacheCompileOnly.extendsFrom(testCompileOnly)

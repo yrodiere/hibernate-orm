@@ -4,6 +4,7 @@
  */
 package org.hibernate.processor.test.ormPanache;
 
+import io.quarkus.panache.hibernate.common.processor.MyCustomAnnotation;
 import org.hibernate.Session;
 import org.hibernate.processor.test.util.CompilationTest;
 import org.hibernate.processor.test.util.TestUtil;
@@ -94,11 +95,13 @@ class QuarkusOrmPanacheTest {
 		Method method = repositoryClass.getDeclaredMethod( "hqlBook", String.class );
 		Assertions.assertNotNull( method );
 		Assertions.assertFalse( Modifier.isStatic( method.getModifiers() ) );
+		Assertions.assertNotNull( method.getAnnotation( MyCustomAnnotation.class ) );
 
 		// Annotated method generates an instance method
 		method = repositoryClass.getDeclaredMethod( "findBook", String.class );
 		Assertions.assertNotNull( method );
 		Assertions.assertFalse( Modifier.isStatic( method.getModifiers() ) );
+		Assertions.assertNotNull( method.getAnnotation( MyCustomAnnotation.class ) );
 
 		// Make sure we have the proper constructor
 		Constructor<?> constructor = repositoryClass.getDeclaredConstructor( Session.class );
