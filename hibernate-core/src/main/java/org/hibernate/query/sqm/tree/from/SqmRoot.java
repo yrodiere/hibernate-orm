@@ -28,13 +28,15 @@ import org.hibernate.query.sqm.tree.domain.SqmCorrelatedRoot;
 import org.hibernate.query.sqm.tree.domain.SqmPath;
 import org.hibernate.query.sqm.tree.domain.SqmTreatedRoot;
 
+import static org.hibernate.internal.util.NullnessUtil.castNonNull;
+
 /**
  * @author Steve Ebersole
  */
 public class SqmRoot<E> extends AbstractSqmFrom<E,E> implements JpaRoot<E> {
 
 	private final boolean allowJoins;
-	private List<SqmJoin<?, ?>> orderedJoins;
+	private @Nullable List<SqmJoin<?, ?>> orderedJoins;
 
 	public SqmRoot(
 			EntityDomainType<E> entityType,
@@ -123,6 +125,7 @@ public class SqmRoot<E> extends AbstractSqmFrom<E,E> implements JpaRoot<E> {
 			// If we encounter anything but an attribute join, we need to order joins strictly
 			if ( !( join instanceof SqmAttributeJoin<?, ?> ) ) {
 				orderedJoins = new ArrayList<>();
+				// FIXME possible bug: parameter 'join' is not added anywhere in this case? If that's normal, add a comment.
 				visitSqmJoins( this::addOrderedJoinTransitive );
 			}
 		}
@@ -132,7 +135,8 @@ public class SqmRoot<E> extends AbstractSqmFrom<E,E> implements JpaRoot<E> {
 	}
 
 	private void addOrderedJoinTransitive(SqmJoin<?, ?> join) {
-		orderedJoins.add( join );
+		// The caller will have already initialized `orderedJoin` when this is called.
+		castNonNull( orderedJoins ).add( join );
 		join.visitSqmJoins( this::addOrderedJoinTransitive );
 	}
 

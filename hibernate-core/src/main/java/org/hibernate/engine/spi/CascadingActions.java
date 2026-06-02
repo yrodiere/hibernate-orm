@@ -57,7 +57,7 @@ public class CascadingActions {
 				String childEntityName,
 				String parentEntityName,
 				String propertyName,
-				List<String> attributePath,
+				@Nullable List<String> attributePath,
 				DeleteContext context,
 				boolean isCascadeDeleteEnabled) {
 			session.delete( childEntityName, child, isCascadeDeleteEnabled, context );
@@ -109,7 +109,7 @@ public class CascadingActions {
 				String childEntityName,
 				String parentEntityName,
 				String propertyName,
-				List<String> attributePath,
+				@Nullable List<String> attributePath,
 				LockOptions lockOptions,
 				boolean isCascadeDeleteEnabled) {
 			session.lock( childEntityName, child, lockOptions );
@@ -147,7 +147,7 @@ public class CascadingActions {
 				String childEntityName,
 				String parentEntityName,
 				String propertyName,
-				List<String> attributePath,
+				@Nullable List<String> attributePath,
 				RefreshContext context,
 				boolean isCascadeDeleteEnabled)
 				throws HibernateException {
@@ -193,7 +193,7 @@ public class CascadingActions {
 				String childEntityName,
 				String parentEntityName,
 				String propertyName,
-				List<String> attributePath,
+				@Nullable List<String> attributePath,
 				Void nothing,
 				boolean isCascadeDeleteEnabled)
 				throws HibernateException {
@@ -236,7 +236,7 @@ public class CascadingActions {
 				String childEntityName,
 				String parentEntityName,
 				String propertyName,
-				List<String> attributePath,
+				@Nullable List<String> attributePath,
 				MergeContext context,
 				boolean isCascadeDeleteEnabled)
 				throws HibernateException {
@@ -275,7 +275,7 @@ public class CascadingActions {
 				String childEntityName,
 				String parentEntityName,
 				String propertyName,
-				List<String> attributePath,
+				@Nullable List<String> attributePath,
 				PersistContext context,
 				boolean isCascadeDeleteEnabled)
 				throws HibernateException {
@@ -325,7 +325,7 @@ public class CascadingActions {
 				String childEntityName,
 				String parentEntityName,
 				String propertyName,
-				List<String> attributePath,
+				@Nullable List<String> attributePath,
 				PersistContext context,
 				boolean isCascadeDeleteEnabled)
 				throws HibernateException {
@@ -376,7 +376,7 @@ public class CascadingActions {
 				String childEntityName,
 				String parentEntityName,
 				String propertyName,
-				List<String> attributePath,
+				@Nullable List<String> attributePath,
 				Void nothing,
 				boolean isCascadeDeleteEnabled)
 				throws HibernateException {
@@ -529,7 +529,7 @@ public class CascadingActions {
 				String childEntityName,
 				String parentEntityName,
 				String propertyName,
-				List<String> attributePath,
+				@Nullable List<String> attributePath,
 				ReplicationMode mode,
 				boolean isCascadeDeleteEnabled)
 				throws HibernateException {
