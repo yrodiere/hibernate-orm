@@ -19,7 +19,7 @@ import static org.hibernate.processor.util.Constants.QUERY;
 import static org.hibernate.processor.util.Constants.STATIC_STATEMENT_REFERENCE;
 import static org.hibernate.processor.util.Constants.STATIC_TYPED_QUERY_REFERENCE;
 import static org.hibernate.processor.util.Constants.VOID;
-import static org.hibernate.processor.util.NullnessUtil.castNonNull;
+import static org.hibernate.internal.util.NullnessUtil.castNonNull;
 import static org.hibernate.processor.util.StringUtil.getUpperUnderscoreCaseFromLowerCamelCase;
 import static org.hibernate.processor.util.TypeUtils.getAnnotationMirror;
 
