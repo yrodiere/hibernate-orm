@@ -21,7 +21,7 @@ import org.hibernate.stat.CacheRegionStatistics;
 import org.hibernate.stat.Statistics;
 
 import org.hibernate.testing.bytecode.enhancement.extension.BytecodeEnhanced;
-import org.hibernate.testing.jdbc.CollectingStatementObserver;
+import org.hibernate.testing.jdbc.SQLStatementInspector;
 import org.hibernate.testing.orm.junit.DomainModel;
 import org.hibernate.testing.orm.junit.JiraKey;
 import org.hibernate.testing.orm.junit.ServiceRegistry;
@@ -62,7 +62,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 				@Setting(name = AvailableSettings.GENERATE_STATISTICS, value = "true"),
 		}
 )
-@SessionFactory(useCollectingStatementObserver = true)
+@SessionFactory(useCollectingStatementInspector = true)
 @BytecodeEnhanced
 public class ImmutableLazyBasicWithAssociationCacheTest {
 
@@ -95,7 +95,7 @@ public class ImmutableLazyBasicWithAssociationCacheTest {
 	@JiraKey("HHH-20773")
 	public void testLazyFieldCachedAfterPersist(SessionFactoryScope scope) {
 		final Statistics stats = scope.getSessionFactory().getStatistics();
-		final CollectingStatementObserver observer = scope.getCollectingStatementObserver();
+		final SQLStatementInspector observer = scope.getCollectingStatementInspector();
 		stats.clear();
 		scope.getSessionFactory().getCache().evictAll();
 
@@ -154,7 +154,7 @@ public class ImmutableLazyBasicWithAssociationCacheTest {
 	@JiraKey("HHH-20773")
 	public void testLazyFieldSurvivedCacheRoundTrip(SessionFactoryScope scope) {
 		final Statistics stats = scope.getSessionFactory().getStatistics();
-		final CollectingStatementObserver observer = scope.getCollectingStatementObserver();
+		final SQLStatementInspector observer = scope.getCollectingStatementInspector();
 		stats.clear();
 		scope.getSessionFactory().getCache().evictAll();
 
@@ -211,7 +211,7 @@ public class ImmutableLazyBasicWithAssociationCacheTest {
 	@JiraKey("HHH-20773")
 	public void testNullLazyFieldCachedForImmutableEntity(SessionFactoryScope scope) {
 		final Statistics stats = scope.getSessionFactory().getStatistics();
-		final CollectingStatementObserver observer = scope.getCollectingStatementObserver();
+		final SQLStatementInspector observer = scope.getCollectingStatementInspector();
 		stats.clear();
 		scope.getSessionFactory().getCache().evictAll();
 
@@ -266,7 +266,7 @@ public class ImmutableLazyBasicWithAssociationCacheTest {
 	@JiraKey("HHH-20773")
 	public void testLazyFieldNotInitializedDuringLoad(SessionFactoryScope scope) {
 		final Statistics stats = scope.getSessionFactory().getStatistics();
-		final CollectingStatementObserver observer = scope.getCollectingStatementObserver();
+		final SQLStatementInspector observer = scope.getCollectingStatementInspector();
 
 		final Long[] entityId = new Long[1];
 
@@ -345,7 +345,7 @@ public class ImmutableLazyBasicWithAssociationCacheTest {
 	@JiraKey("HHH-20773")
 	public void testLazyFieldNotCachedWhenIncludeLazyIsFalse(SessionFactoryScope scope) {
 		final Statistics stats = scope.getSessionFactory().getStatistics();
-		final CollectingStatementObserver observer = scope.getCollectingStatementObserver();
+		final SQLStatementInspector observer = scope.getCollectingStatementInspector();
 		stats.clear();
 		scope.getSessionFactory().getCache().evictAll();
 
