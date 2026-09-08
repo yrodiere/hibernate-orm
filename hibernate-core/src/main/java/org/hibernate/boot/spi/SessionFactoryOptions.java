@@ -14,6 +14,7 @@ import jakarta.persistence.CacheStoreMode;
 import jakarta.annotation.Nullable;
 import org.hibernate.CacheMode;
 import org.hibernate.CustomEntityDirtinessStrategy;
+import org.hibernate.cfg.CheckHandling;
 import org.hibernate.EntityNameResolver;
 import org.hibernate.FlushMode;
 import org.hibernate.GraphParserMode;
@@ -557,6 +558,16 @@ public interface SessionFactoryOptions extends QueryEngineOptions {
 	 */
 	default boolean getNativeJdbcParametersIgnored() {
 		return false;
+	}
+
+	/**
+	 * @see org.hibernate.cfg.MappingSettings#FINAL_PERSISTENT_FIELDS
+	 *
+	 * @since 8.1
+	 */
+	@Incubating
+	default CheckHandling getFinalPersistentFieldsHandling() {
+		return CheckHandling.WARN;
 	}
 
 	/**

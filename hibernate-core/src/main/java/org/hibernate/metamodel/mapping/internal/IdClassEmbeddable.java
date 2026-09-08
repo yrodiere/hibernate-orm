@@ -4,8 +4,12 @@
  */
 package org.hibernate.metamodel.mapping.internal;
 
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
+import org.hibernate.MappingException;
+import org.hibernate.cfg.CheckHandling;
+import org.hibernate.cfg.MappingSettings;
 import org.hibernate.engine.FetchStyle;
 import org.hibernate.engine.FetchTiming;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
@@ -20,9 +24,11 @@ import org.hibernate.metamodel.mapping.NonAggregatedIdentifierMapping;
 import org.hibernate.metamodel.mapping.NonAggregatedIdentifierMapping.IdentifierValueMapper;
 import org.hibernate.metamodel.mapping.SelectableMappings;
 import org.hibernate.metamodel.model.domain.NavigableRole;
+import org.hibernate.metamodel.internal.StandardEmbeddableInstantiator;
 import org.hibernate.metamodel.spi.EmbeddableRepresentationStrategy;
 import org.hibernate.property.access.internal.PropertyAccessStrategyMapImpl;
 import org.hibernate.property.access.spi.PropertyAccess;
+import org.hibernate.property.access.spi.SetterFieldImpl;
 import org.hibernate.spi.NavigablePath;
 import org.hibernate.sql.ast.spi.query.from.TableGroup;
 import org.hibernate.sql.ast.spi.query.from.TableGroupProducer;
@@ -34,6 +40,8 @@ import org.hibernate.type.CompositeType;
 import org.hibernate.type.descriptor.java.JavaType;
 import org.hibernate.type.spi.CompositeTypeImplementor;
 
+import static java.lang.reflect.Modifier.isFinal;
+import static org.hibernate.internal.CoreMessageLogger.CORE_LOGGER;
 import static org.hibernate.metamodel.mapping.internal.MappingModelCreationHelper.getTableIdentifierExpression;
 
 /**
@@ -73,6 +81,10 @@ public class IdClassEmbeddable extends AbstractEmbeddableMapping implements Iden
 				idClassSource.sortProperties() == null,
 				idClassSource::getPropertyNames
 		);
+
+		warnOnFinalFields( idClassSource, representationStrategy,
+				creationProcess.getCreationContext().getSessionFactoryOptions()
+						.getFinalPersistentFieldsHandling() );
 
 		final var propertyAccess =
 				PropertyAccessStrategyMapImpl.INSTANCE.buildPropertyAccess(
@@ -306,6 +318,38 @@ public class IdClassEmbeddable extends AbstractEmbeddableMapping implements Iden
 	}
 
 
+
+	private static void warnOnFinalFields(
+			Component idClassSource,
+			IdClassRepresentationStrategy representationStrategy,
+			CheckHandling handling) {
+		if ( !( representationStrategy.getInstantiator() instanceof StandardEmbeddableInstantiator ) ) {
+			return;
+		}
+		if ( handling == CheckHandling.IGNORE ) {
+			return;
+		}
+		var finalFields = new ArrayList<String>();
+		for ( var property : idClassSource.getProperties() ) {
+			var propertyAccess = representationStrategy.resolvePropertyAccess( property );
+			if ( propertyAccess.getSetter() instanceof SetterFieldImpl setter
+					&& isFinal( setter.getField().getModifiers() ) ) {
+				finalFields.add( property.getName() );
+			}
+		}
+		if ( !finalFields.isEmpty() ) {
+			if ( handling == CheckHandling.ERROR ) {
+				throw new MappingException( String.format(
+						"Persistent fields %s in id class '%s' are declared 'final'",
+						finalFields, idClassSource.getComponentClassName()
+				) );
+			}
+			CORE_LOGGER.finalPersistentFields(
+					finalFields, "id class", idClassSource.getComponentClassName(),
+					MappingSettings.FINAL_PERSISTENT_FIELDS
+			);
+		}
+	}
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// init

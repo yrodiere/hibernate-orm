@@ -650,4 +650,18 @@ public interface CoreMessageLogger extends BasicLogger {
 	@LogMessage(level = DEBUG)
 	@Message(id = 604, value = "Attempting to resolve writer for URL: %s")
 	void attemptingToCreateWriter(URL url);
+
+	@LogMessage(level = WARN)
+	@Message(
+			id = 6595,
+			value = "Persistent fields %s in %s class '%s' are declared 'final'. "
+					+ "Hibernate uses reflection to set these fields, "
+					+ "which is deprecated starting with JDK 26 "
+					+ "and will be denied in a future JDK version. "
+					+ "To resolve this, enable bytecode enhancement, "
+					+ "which automatically removes the 'final' modifier "
+					+ "from persistent fields, or remove 'final' from these fields. "
+					+ "To suppress this warning, set '%s' to 'ignore'."
+	)
+	void finalPersistentFields(Object fieldNames, String classKind, String className, String settingName);
 }
