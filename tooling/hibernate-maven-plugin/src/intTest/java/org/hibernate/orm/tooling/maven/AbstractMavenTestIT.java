@@ -15,6 +15,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public abstract class AbstractMavenTestIT {
@@ -126,7 +127,18 @@ public abstract class AbstractMavenTestIT {
 							</repository>
 						""" );
 			}
-			settings.append( "</repositories>\n</profile>\n" );
+			settings.append( "</repositories>\n<pluginRepositories>\n" );
+			if ( hasCentralFallback ) {
+				settings.append( """
+							<pluginRepository>
+							<id>central-fallback</id>
+							<url>https://repo.maven.apache.org/maven2/</url>
+							<releases><enabled>true</enabled></releases>
+							<snapshots><enabled>false</enabled></snapshots>
+							</pluginRepository>
+						""" );
+			}
+			settings.append( "</pluginRepositories>\n</profile>\n" );
 		}
 		settings.append( "</profiles>\n" );
 		settings.append( "<activeProfiles>\n" );
@@ -152,16 +164,19 @@ public abstract class AbstractMavenTestIT {
 		System.setProperty( MVN_HOME, workingDirectory );
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ByteArrayOutputStream err = new ByteArrayOutputStream();
-		String[] args;
+		var extraArgs = new ArrayList<String>();
 		if ( mavenSettingsFile != null ) {
-			args = new String[goals.length + 2];
-			args[0] = "-s";
-			args[1] = mavenSettingsFile.toAbsolutePath().toString();
-			System.arraycopy( goals, 0, args, 2, goals.length );
+			extraArgs.add( "-s" );
+			extraArgs.add( mavenSettingsFile.toAbsolutePath().toString() );
 		}
-		else {
-			args = goals;
+		if ( System.getenv( "MIRROR_MAVEN_CENTRAL_FALLBACK" ) != null ) {
+			extraArgs.add( "-U" );
 		}
+		String[] args = new String[extraArgs.size() + goals.length];
+		for ( int i = 0; i < extraArgs.size(); i++ ) {
+			args[i] = extraArgs.get( i );
+		}
+		System.arraycopy( goals, 0, args, extraArgs.size(), goals.length );
 		int result = mavenCli.doMain(
 				args,
 				workingDirectory,
