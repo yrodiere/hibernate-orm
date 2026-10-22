@@ -7,6 +7,10 @@ import static net.bytebuddy.matcher.ElementMatchers.not;
 import static org.hibernate.bytecode.enhance.internal.BytecodeEnhancementLogging.ENHANCEMENT_LOGGER;
 import static org.hibernate.bytecode.enhance.spi.EnhancerConstants.PERSISTENT_FIELD_READER_PREFIX;
 import static org.hibernate.bytecode.enhance.spi.EnhancerConstants.PERSISTENT_FIELD_WRITER_PREFIX;
+import static org.hibernate.bytecode.enhance.spi.EnhancerConstants.TRACKER_COMPOSITE_SET_OWNER;
+
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Id;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -36,7 +40,10 @@ import net.bytebuddy.implementation.Implementation;
 import net.bytebuddy.implementation.StubMethod;
 import net.bytebuddy.implementation.bytecode.ByteCodeAppender;
 import net.bytebuddy.jar.asm.AnnotationVisitor;
+import net.bytebuddy.jar.asm.ClassReader;
+import net.bytebuddy.jar.asm.ClassWriter;
 import net.bytebuddy.jar.asm.FieldVisitor;
+import net.bytebuddy.jar.asm.Label;
 import net.bytebuddy.jar.asm.MethodVisitor;
 import net.bytebuddy.jar.asm.Opcodes;
 import net.bytebuddy.jar.asm.Type;
@@ -220,40 +227,254 @@ final class PersistentAttributeTransformer implements AsmVisitorWrapper.ForDecla
 			TypePool typePool,
 			int writerFlags,
 			int readerFlags) {
+		// For entity constructors with inline dirty checking, we need to handle field writes
+		// that occur before super() (Java 25+ flexible constructors, JEP 513).
+		//
+		// Before super(), 'this' is uninitializedThis -- INVOKEVIRTUAL is illegal on it,
+		// so we cannot replace PUTFIELD with the $$_hibernate_write_<field> call.
+		// Instead, we keep the original PUTFIELD and replay the side effects after super():
+		//
+		//   - Dirty tracking: $$_hibernate_trackChange(fieldName)
+		//   - Composite ownership: ((CompositeTracker) field).$$_hibernate_setOwner(name, this)
+		//
+		// To handle conditional writes (where PUTFIELD is inside an if-block), we use
+		// boolean locals that are set to true after each PUTFIELD and checked after super().
+		//
+		// Given this entity source using a flexible constructor:
+		//
+		//   public MyEntity(Address address) {
+		//       this.address = address;
+		//       super();
+		//   }
+		//
+		// The enhanced constructor behaves as if it were:
+		//
+		//   public MyEntity(Address address) {
+		//       boolean $$_dirty_address = false;
+		//       this.address = address;         // kept as raw PUTFIELD
+		//       $$_dirty_address = true;
+		//       super();
+		//       if ($$_dirty_address) {
+		//           if (this.address != null) {
+		//               ((CompositeTracker) this.address).$$_hibernate_setOwner("address", this);
+		//           }
+		//           this.$$_hibernate_trackChange("address");
+		//       }
+		//   }
+		final boolean inlineTrackingConstructor;
+		final int booleanLocalsBase;
+		final int booleanLocalsCount;
+		if ( instrumentedMethod.isConstructor()
+				&& enhancementContext.doDirtyCheckingInline()
+				&& enhancementContext.isEntityClass( managedCtClass ) ) {
+			int count = 0;
+			for ( var field : enhancedFields ) {
+				if ( !field.getFieldDescription().isFinal()
+						&& !field.hasAnnotation( Id.class )
+						&& !field.hasAnnotation( EmbeddedId.class ) ) {
+					count++;
+				}
+			}
+			if ( count > 0 ) {
+				inlineTrackingConstructor = true;
+				booleanLocalsBase = Type.getArgumentsAndReturnSizes(
+						instrumentedMethod.getDescriptor() ) >> 2;
+				booleanLocalsCount = count;
+			}
+			else {
+				inlineTrackingConstructor = false;
+				booleanLocalsBase = -1;
+				booleanLocalsCount = 0;
+			}
+		}
+		else {
+			inlineTrackingConstructor = false;
+			booleanLocalsBase = -1;
+			booleanLocalsCount = 0;
+		}
+
 		return new MethodVisitor( OpenedClassReader.ASM_API, methodVisitor ) {
+			// In a constructor, 'this' is uninitializedThis before the super()/this() call.
+			// We cannot replace field access with virtual method calls on uninitializedThis,
+			// which would cause a VerifyError with Java 25+ flexible constructors (JEP 513).
+			// Instead, we keep the original PUTFIELD and use boolean locals to replay
+			// dirty tracking after super().
+			private boolean beforeSuperCall = instrumentedMethod.isConstructor();
+			private int newObjectDepth = 0;
+			private final List<AnnotatedFieldDescription> enhancedFieldsWrittenBeforeSuper = new ArrayList<>();
+
+			private int remapLocal(int var) {
+				return ( booleanLocalsCount > 0 && var >= booleanLocalsBase )
+						? var + booleanLocalsCount : var;
+			}
+
 			@Override
-			public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-				final var enhancedField = getEnhancedField( owner, name, desc );
-				if ( enhancedField != null ) {
-					switch ( opcode ) {
-						case Opcodes.GETFIELD:
-							methodVisitor.visitMethodInsn(
-									Opcodes.INVOKEVIRTUAL,
-									owner,
-									PERSISTENT_FIELD_READER_PREFIX + name,
-									"()" + desc,
-									false
-							);
-							return;
-						case Opcodes.PUTFIELD:
-							if ( enhancedField.getFieldDescription().isFinal() ) {
-								// Final fields will only be written to from the constructor,
-								// so there's no point trying to replace final field writes with a method call.
-								break;
-							}
-							methodVisitor.visitMethodInsn(
-									Opcodes.INVOKEVIRTUAL,
-									owner,
-									PERSISTENT_FIELD_WRITER_PREFIX + name,
-									"(" + desc + ")V",
-									false
-							);
-							return;
+			public void visitCode() {
+				super.visitCode();
+				if ( inlineTrackingConstructor ) {
+					for ( int i = 0; i < booleanLocalsCount; i++ ) {
+						methodVisitor.visitInsn( Opcodes.ICONST_0 );
+						methodVisitor.visitVarInsn( Opcodes.ISTORE, booleanLocalsBase + i );
 					}
 				}
-				super.visitFieldInsn( opcode, owner, name, desc );
+			}
+
+			@Override
+			public void visitVarInsn(int opcode, int varIndex) {
+				super.visitVarInsn( opcode, remapLocal( varIndex ) );
+			}
+
+			@Override
+			public void visitIincInsn(int varIndex, int increment) {
+				super.visitIincInsn( remapLocal( varIndex ), increment );
+			}
+
+			@Override
+			public void visitLocalVariable(
+					String name, String descriptor, String signature,
+					Label start, Label end, int index) {
+				super.visitLocalVariable( name, descriptor, signature,
+						start, end, remapLocal( index ) );
+			}
+
+			@Override
+			public void visitTypeInsn(int opcode, String type) {
+				if ( beforeSuperCall && opcode == Opcodes.NEW ) {
+					newObjectDepth++;
+				}
+				super.visitTypeInsn( opcode, type );
+			}
+
+			@Override
+			public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+				if ( beforeSuperCall && opcode == Opcodes.INVOKESPECIAL && "<init>".equals( name ) ) {
+					if ( newObjectDepth > 0 ) {
+						newObjectDepth--;
+					}
+					else {
+						beforeSuperCall = false;
+						super.visitMethodInsn( opcode, owner, name, descriptor, isInterface );
+						emitConditionalDirtyTracking();
+						return;
+					}
+				}
+				super.visitMethodInsn( opcode, owner, name, descriptor, isInterface );
+			}
+
+			@Override
+			public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+				if ( beforeSuperCall ) {
+					super.visitFieldInsn( opcode, owner, name, desc );
+					if ( opcode == Opcodes.PUTFIELD && inlineTrackingConstructor ) {
+						var field = getDirtyTrackableField( name );
+						if ( field != null ) {
+							int idx = enhancedFieldsWrittenBeforeSuper.indexOf( field );
+							if ( idx < 0 ) {
+								idx = enhancedFieldsWrittenBeforeSuper.size();
+								enhancedFieldsWrittenBeforeSuper.add( field );
+							}
+							methodVisitor.visitInsn( Opcodes.ICONST_1 );
+							methodVisitor.visitVarInsn(
+									Opcodes.ISTORE, booleanLocalsBase + idx );
+						}
+					}
+				}
+				else {
+					final var enhancedField = getEnhancedField( owner, name, desc );
+					if ( enhancedField != null ) {
+						switch ( opcode ) {
+							case Opcodes.GETFIELD:
+								methodVisitor.visitMethodInsn(
+										Opcodes.INVOKEVIRTUAL,
+										owner,
+										PERSISTENT_FIELD_READER_PREFIX + name,
+										"()" + desc,
+										false
+								);
+								return;
+							case Opcodes.PUTFIELD:
+								// Final fields will only be written to from the constructor,
+								// so there's no point trying to replace final field writes
+								// with a method call.
+								if ( enhancedField.getFieldDescription().isFinal() ) {
+									break;
+								}
+								methodVisitor.visitMethodInsn(
+										Opcodes.INVOKEVIRTUAL,
+										owner,
+										PERSISTENT_FIELD_WRITER_PREFIX + name,
+										"(" + desc + ")V",
+										false
+								);
+								return;
+						}
+					}
+					super.visitFieldInsn( opcode, owner, name, desc );
+				}
+			}
+
+			private AnnotatedFieldDescription getDirtyTrackableField(String name) {
+				for ( var field : enhancedFields ) {
+					if ( field.getName().equals( name )
+							&& !field.getFieldDescription().isFinal()
+							&& !field.hasAnnotation( Id.class )
+							&& !field.hasAnnotation( EmbeddedId.class ) ) {
+						return field;
+					}
+				}
+				return null;
+			}
+
+			private void emitConditionalDirtyTracking() {
+				if ( enhancedFieldsWrittenBeforeSuper.isEmpty() ) {
+					return;
+				}
+				final var owner = managedCtClass.getInternalName();
+				for ( int i = 0; i < enhancedFieldsWrittenBeforeSuper.size(); i++ ) {
+					final var field = enhancedFieldsWrittenBeforeSuper.get( i );
+					final var skipLabel = new Label();
+					methodVisitor.visitVarInsn( Opcodes.ILOAD, booleanLocalsBase + i );
+					methodVisitor.visitJumpInsn( Opcodes.IFEQ, skipLabel );
+					if ( InlineDirtyCheckingHandler.isCompositeOwnerField(
+								enhancementContext, field ) ) {
+						emitCompositeOwnerSetup(
+								methodVisitor, owner, field.getName(), field.getDescriptor() );
+					}
+					InlineDirtyCheckingHandler.emitTrackChange(
+							methodVisitor, owner, field.getName() );
+					methodVisitor.visitLabel( skipLabel );
+				}
 			}
 		};
+	}
+
+	// Keep in sync with CompositeFieldDirtyCheckingHandler.exit() in CodeTemplates.
+	private static void emitCompositeOwnerSetup(
+			MethodVisitor methodVisitor,
+			String ownerInternalName,
+			String fieldName,
+			String fieldDescriptor) {
+		final var nullLabel = new Label();
+		final var afterLabel = new Label();
+		methodVisitor.visitVarInsn( Opcodes.ALOAD, 0 );
+		methodVisitor.visitFieldInsn( Opcodes.GETFIELD, ownerInternalName, fieldName, fieldDescriptor );
+		methodVisitor.visitInsn( Opcodes.DUP );
+		methodVisitor.visitJumpInsn( Opcodes.IFNULL, nullLabel );
+		methodVisitor.visitTypeInsn( Opcodes.CHECKCAST, "org/hibernate/engine/spi/CompositeTracker" );
+		methodVisitor.visitLdcInsn( fieldName );
+		methodVisitor.visitVarInsn( Opcodes.ALOAD, 0 );
+		methodVisitor.visitTypeInsn( Opcodes.CHECKCAST, "org/hibernate/engine/spi/CompositeOwner" );
+		methodVisitor.visitMethodInsn(
+				Opcodes.INVOKEINTERFACE,
+				"org/hibernate/engine/spi/CompositeTracker",
+				TRACKER_COMPOSITE_SET_OWNER,
+				"(Ljava/lang/String;Lorg/hibernate/engine/spi/CompositeOwner;)V",
+				true
+		);
+		methodVisitor.visitJumpInsn( Opcodes.GOTO, afterLabel );
+		methodVisitor.visitLabel( nullLabel );
+		methodVisitor.visitInsn( Opcodes.POP );
+		methodVisitor.visitLabel( afterLabel );
 	}
 
 	private AnnotatedFieldDescription getEnhancedField(String owner, String name, String desc) {
@@ -287,7 +508,10 @@ final class PersistentAttributeTransformer implements AsmVisitorWrapper.ForDecla
 				)
 		);
 
-		builder = builder.visit( new AsmVisitorWrapper.ForDeclaredMethods().invokable( NOT_HIBERNATE_GENERATED, this ) );
+		builder = builder.visit( new AsmVisitorWrapper.ForDeclaredMethods()
+				.invokable( NOT_HIBERNATE_GENERATED, this )
+				.writerFlags( ClassWriter.COMPUTE_FRAMES )
+				.readerFlags( ClassReader.EXPAND_FRAMES ) );
 		// Remove the final modifier from all enhanced fields, because:
 		// 1. We sometimes need to write to final fields when they are lazy.
 		// 2. Those fields are already written to by Hibernate ORM through reflection anyway.

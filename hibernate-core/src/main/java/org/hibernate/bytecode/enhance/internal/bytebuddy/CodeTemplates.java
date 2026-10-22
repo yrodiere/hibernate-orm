@@ -331,6 +331,9 @@ class CodeTemplates {
 		}
 	}
 
+	// Keep in sync with PersistentAttributeTransformer.emitCompositeOwnerSetup()
+	// and InlineDirtyCheckingHandler.emitTrackChange(), which duplicate the exit()
+	// logic as direct bytecode generation for the flexible constructor replay path.
 	static class CompositeFieldDirtyCheckingHandler {
 		@Advice.OnMethodEnter
 		static void enter(@FieldName String fieldName, @FieldValue Object field) {

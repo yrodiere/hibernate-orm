@@ -69,7 +69,11 @@ final class FieldAccessEnhancer implements AsmVisitorWrapper.ForDeclaredMethods.
 		return new MethodVisitor( OpenedClassReader.ASM_API, methodVisitor ) {
 			@Override
 			public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-				if ( opcode != Opcodes.GETFIELD && opcode != Opcodes.PUTFIELD ) {
+				if ( ( opcode != Opcodes.GETFIELD && opcode != Opcodes.PUTFIELD )
+						|| managedCtClass.getInternalName().equals( owner ) ) {
+					// Own-class field access is already handled by PersistentAttributeTransformer;
+					// replacing it here would also break Java 25+ flexible constructors (JEP 513)
+					// where field writes occur before super(), on uninitializedThis.
 					super.visitFieldInsn( opcode, owner, name, desc );
 				}
 				else {
